@@ -1,0 +1,3 @@
+INC_DIRS+= $(USER_DIR)/Inc
+
+SRC_DIRS+= $(USER_DIR)/Src
