@@ -24,5 +24,7 @@ void ClearBuf(uint8_t* data, uint8_t len);
 uint8_t Write_to_USB(uint8_t* data);
 uint8_t Read_from_USB(uint8_t *data);
 void USB_Echo();
+void USB_Send_int(int32_t value);
+void USB_Count();
 
 #endif /* USB_LIB_INC_USB_H_ */

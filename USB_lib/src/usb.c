@@ -8,7 +8,7 @@
 #include "usb.h"
 
 USB_OTG_CORE_HANDLE  USB_OTG_dev;
-uint8_t InBuffer[63], OutBuffer[63];
+uint8_t InBuffer[HID_IN_PACKET], OutBuffer[HID_OUT_PACKET];
 
 void USB_HID_Init(){
   USBD_Init(&USB_OTG_dev,
@@ -28,12 +28,12 @@ void ClearBuf(uint8_t* data, uint8_t len){
 }
 
 uint8_t Write_to_USB(uint8_t* data){
-  ClearBuf(InBuffer, 63);
+  ClearBuf(InBuffer, HID_IN_PACKET);
   uint8_t len = 0;
   for(; data[len] != '\0'; len++){
     InBuffer[len] = data[len];
   }
-  USB_HID_SendReport(InBuffer, 63);
+  USB_HID_SendReport(InBuffer, HID_IN_PACKET);
   return len;
 }
 
@@ -47,12 +47,12 @@ uint8_t Read_from_USB(uint8_t *data){
   for(; OutBuffer[len]; len++){
     data[len] = OutBuffer[len];
   }
-  ClearBuf(OutBuffer, 63);
+  ClearBuf(OutBuffer, HID_OUT_PACKET);
   return len;
 }
 
 void USB_Echo(){
-  uint8_t Buffer[63] = {0};
+  uint8_t Buffer[HID_IN_PACKET] = {0};
   uint8_t str[PCF8812_STR_SIZ] = "";
   while(1)
     {
@@ -67,6 +67,35 @@ void USB_Echo(){
     }
     PCF8812_Putline_Centre(str, 4);
     PCF8812_DELAY;
-    ClearBuf(Buffer, 63);
+    ClearBuf(Buffer, HID_IN_PACKET);
+    }
+}
+
+void USB_Send_int(int32_t value){
+  uint8_t Buffer[HID_IN_PACKET] = {0};
+  snprintf(Buffer, HID_IN_PACKET, "%d\n", value);
+  Write_to_USB(Buffer);
+  ClearBuf(Buffer, HID_IN_PACKET);
+}
+
+void USB_Count(){
+
+
+  for(uint32_t i = 0; ; i++)
+    {
+
+    PCF8812_Clear();
+    PCF8812_Title("USB COUNT");
+    PCF8812_Button("OK", "", "");
+    if(Get_Button(user_button)){
+        //if(Check_Button(user_button)){
+        LED_ON(red);
+        break;
+    }
+
+    PCF8812_UValue("count", i, "", 4);
+    USB_Send_int(i);
+    delay_ms(1000);
+
     }
 }

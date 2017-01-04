@@ -76,9 +76,6 @@
 /** @defgroup USBD_IOREQ_Exported_FunctionsPrototype
   * @{
   */ 
-#ifndef USBD_Status
-#include "usbd_core.h"
-#endif
 
 
 /*USBD_Status*/uint8_t  USBD_CtlSendData (USB_OTG_CORE_HANDLE  *pdev,

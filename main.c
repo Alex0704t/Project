@@ -72,7 +72,8 @@ int main(void)
 //    ClearBuf(&Buffer, 63);
 //
 //    USB_HID_SendReport("HI\n", 64);
-	  USB_Echo();
+	  //USB_Echo();
+	  USB_Count();
 
   }
 }
