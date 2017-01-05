@@ -3,13 +3,29 @@
 button_s butt[3] = {0};
 
 
-void Button_Init(void) {
-	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN|RCC_AHB1ENR_GPIOCEN;//GPIOA & GPIOC clock enable
-	GPIOA->MODER &= ~GPIO_MODER_MODER0;//Input PA0
-	GPIOA->OTYPER = 0x00;//Push-pull
-	GPIOA->PUPDR &= ~GPIO_PUPDR_PUPDR0;//no pull-up & pull-down
-	GPIOC->MODER &= ~(GPIO_MODER_MODER8|GPIO_MODER_MODER9);//Input PC8, PC9
-	GPIOC->PUPDR &= ~(GPIO_PUPDR_PUPDR8|GPIO_PUPDR_PUPDR9);//no pull-up & pull-down PC8, PC9
+void Button_Init(uint8_t button) {
+  switch(button) {
+    case user_button:
+      RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;//GPIOA clock enable
+      GPIOA->MODER &= ~GPIO_MODER_MODER0;//Input PA0
+      GPIOA->OTYPER &= ~GPIO_OTYPER_IDR_0;//Push-pull
+      GPIOA->PUPDR &= ~GPIO_PUPDR_PUPDR0;//no pull-up & pull-down
+      break;
+    case button_1:
+      RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;//GPIOC clock enable
+      GPIOC->MODER &= ~GPIO_MODER_MODER8;//Input PC8
+      GPIOC->OTYPER &= ~GPIO_OTYPER_IDR_8;//Push-pull
+      GPIOC->PUPDR &= ~GPIO_PUPDR_PUPDR8;//no pull-up & pull-down
+      break;
+    case button_2:
+      RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;//GPIOC clock enable
+      GPIOC->MODER &= ~GPIO_MODER_MODER9;//Input PC9
+      GPIOC->OTYPER &= ~GPIO_OTYPER_IDR_9;//Push-pull
+      GPIOC->PUPDR &= ~GPIO_PUPDR_PUPDR9;//no pull-up & pull-down
+      break;
+    default:
+      break;
+  }
 }
 
 void ButtINT_Init(void) {
@@ -33,7 +49,6 @@ uint8_t Get_Button(uint8_t button) {
   uint8_t temp = butt[button].state;
   butt[button].state = button_released;
   return temp;
-
 }
 
 void EXTI0_IRQHandler(void) {
@@ -55,9 +70,9 @@ void Button_Handler() {
   if(butt[user_button].enable)
       Button_Handle(user_button);
   if(butt[button_1].enable)
-        Button_Handle(button_1);
+      Button_Handle(button_1);
   if(butt[button_2].enable)
-        Button_Handle(button_2);
+      Button_Handle(button_2);
 }
 
 void Button_Handle(uint8_t button) {
@@ -111,7 +126,6 @@ void Exec_button(uint8_t button) {
        butt[button].state = button_released;
        butt[button].press_act();
        PCF8812_Butt_ind(button);
-
        }
 //execute long press action
    else if(butt[button].state == button_hold) {
@@ -146,13 +160,20 @@ void Execute_buttons() {
 }
 
 void Set_Button(uint8_t button, button_s *in) {
-  butt[button] = (button_s){};
+
+  Enable_button(button);
   if(!in->hold_act) {
      in->hold_act = in->press_act;
      in->repeat_ms = 500;
   }
   butt[button] = *in;
   //PCF8812_Button(butt[0].name, butt[1].name, butt[2].name);
+}
+
+void Enable_button(uint8_t button) {
+  butt[button] = (button_s){};
+  Button_Init(button);
+  butt[button].enable = SET;
 }
 
 uint8_t Check_Button(uint8_t button) {

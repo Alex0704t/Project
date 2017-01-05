@@ -11,7 +11,6 @@ void MCU_Init() {
   Clock_Init();
   //GPIO_Clock_En();
   Led_Init();
-  Button_Init();
   Enc_Tim3_Init();
   Tim4_OC_Init();
   PCF8812_Init();

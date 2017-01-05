@@ -18,7 +18,6 @@
 #include "../../USB_lib/STM32_USB_Device_Library/Class/hid_custom/inc/usbd_hid_core.h"
 #include "../../USB_lib/STM32_USB_Device_Library/Core/inc/usbd_core.h"
 #include "../../USB_lib/STM32_USB_OTG_Driver/inc/usb_core.h"
-//#include "stm32f4xx_exti.h"
 
 
 /* Private typedef -----------------------------------------------------------*/

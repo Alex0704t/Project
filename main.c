@@ -34,7 +34,7 @@
 /* Private variables ---------------------------------------------------------*/
   
 //uint8_t InBuffer[63] = {'H','e','l','l','o', '\n'}, OutBuffer[63];
-uint8_t Buffer[63];
+//uint8_t Buffer[63];
 
 
 /* Private functions ---------------------------------------------------------*/
@@ -48,9 +48,11 @@ uint8_t Buffer[63];
 int main(void)
 {
   MCU_Init();
-  LED_ON(orange);
-  delay_ms(500);
-  LED_OFF(orange);
+
+//  button_s temp = {.enable = SET};
+//  Set_Button(user_button, &temp);
+//  Set_Button(button_1, &temp);
+
   while (1)
   {
 //	  delay_ms(1000);
@@ -73,7 +75,7 @@ int main(void)
 //
 //    USB_HID_SendReport("HI\n", 64);
 	  //USB_Echo();
-	  USB_Count();
+	  USB_Count(1000);
 
   }
 }

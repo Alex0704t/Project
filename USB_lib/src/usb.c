@@ -58,6 +58,8 @@ void USB_Echo(){
     {
     PCF8812_Clear();
     PCF8812_Title("USB ECHO");
+//    button_s temp = {.enable = SET};
+//    Set_Button(user_button, &temp);
     PCF8812_Button("OK", "", "");
     if(Get_Button(user_button))
       break;
@@ -78,24 +80,28 @@ void USB_Send_int(int32_t value){
   ClearBuf(Buffer, HID_IN_PACKET);
 }
 
-void USB_Count(){
-
-
-  for(uint32_t i = 0; ; i++)
+void USB_Count(uint32_t period_ms){
+    button_s temp = {.enable = SET};
+    Set_Button(user_button, &temp);
+    uint8_t i = 0;
+    while(1)
     {
 
     PCF8812_Clear();
     PCF8812_Title("USB COUNT");
     PCF8812_Button("OK", "", "");
+
     if(Get_Button(user_button)){
-        //if(Check_Button(user_button)){
-        LED_ON(red);
-        break;
+      break;
     }
 
     PCF8812_UValue("count", i, "", 4);
-    USB_Send_int(i);
-    delay_ms(1000);
 
+    if(Check_delay_ms(period_ms)){
+       USB_Send_int(i);
+       i++;
+    }
+
+    PCF8812_DELAY;
     }
 }

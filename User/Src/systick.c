@@ -56,11 +56,11 @@ uint8_t Check_delay_ms(uint32_t delay)
   if(!tickstart)
     tickstart = Get_Tick();
   if((Get_Tick() - tickstart) < delay)
-    return 1;
+    return 0;
   else
     {
       tickstart = 0;
-      return 0;
+      return 1;
     }
 }
 

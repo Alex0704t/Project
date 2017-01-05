@@ -1,7 +1,7 @@
 #ifndef __BUTTON_H
 #define __BUTTON_H
 
-//#include "../Device/stm32f4xx.h"
+#include "../../Device/stm32f4xx.h"
 #include "user.h"
 
 #define BUTT_DELAY()        delay_ms(35)
@@ -28,7 +28,7 @@ enum button_state
 
 //EXTI->PR |= EXTI_PR_PR0;//clear pending bit of set 1
 
-void Button_Init(void);
+void Button_Init(uint8_t button);
 void ButtINT_Init(void);
 
 typedef void (*p_func)(void);
@@ -52,6 +52,8 @@ void Button_Handle(uint8_t button);
 void Exec_button(uint8_t button);
 void Execute_buttons();
 
+void Enable_button(uint8_t button);
 void Set_Button(uint8_t button, button_s *in);
+
 
 #endif

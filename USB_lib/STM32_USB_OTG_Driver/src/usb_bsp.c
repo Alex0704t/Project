@@ -81,7 +81,7 @@ void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev)
   EXTI->PR |= EXTI_PR_PR0;//clear EXTI0 pending bit
 #else
   /* Configure the Key button in EXTI mode */
-  Button_Init();
+  Button_Init(user_button);
 #endif
 
 }
