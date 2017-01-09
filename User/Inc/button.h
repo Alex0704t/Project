@@ -29,7 +29,7 @@ enum button_state
 //EXTI->PR |= EXTI_PR_PR0;//clear pending bit of set 1
 
 void Button_Init(uint8_t button);
-void ButtINT_Init(void);
+void Button_Int_Init(void);
 
 typedef void (*p_func)(void);
 
@@ -45,15 +45,15 @@ typedef struct button_s{
 
 
 
-uint8_t Get_Button(uint8_t button);
+uint8_t Button_Get(uint8_t button);
 uint8_t Check_Button(uint8_t button);
 void Button_Handler();
 void Button_Handle(uint8_t button);
-void Exec_button(uint8_t button);
-void Execute_buttons();
+void Button_Execute(uint8_t button);
+void Buttons_Executor();
 
-void Enable_button(uint8_t button);
-void Set_Button(uint8_t button, button_s *in);
-
+void Button_Enable(uint8_t button);
+void Button_Set(uint8_t button, button_s *in);
+void Button_Set_Name(uint8_t button, uint8_t* name);
 
 #endif

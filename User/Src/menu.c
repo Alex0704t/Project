@@ -229,9 +229,9 @@ void Enter_menu(menu_s *menu) {
   if(active_menu != menu) {
       active_menu = menu;//set current menu
   //set buttons parameters
-  Set_Button(user_button, active_menu->butt[user_button]);
-  Set_Button(button_1, active_menu->butt[button_1]);
-  Set_Button(button_2, active_menu->butt[button_2]);
+  Button_Set(user_button, active_menu->butt[user_button]);
+  Button_Set(button_1, active_menu->butt[button_1]);
+  Button_Set(button_2, active_menu->butt[button_2]);
   if(active_menu->init_flag == DISABLE) {//if no initialised
       active_menu->Init();//execute initialisation
       active_menu->init_flag = ENABLE;//set flag
@@ -248,7 +248,7 @@ void Enter_menu(menu_s *menu) {
     PCF8812_Option(active_menu->option[i], i + 1);//view menu items
   cur_pos = Get_Enc_Count(active_menu->num - 1);//get cursor position number
   PCF8812_Cursor(cur_pos + 1);//view cursor
-  Execute_buttons();
+  Buttons_Executor();
   PCF8812_DELAY;
   BREAK_OUT;//exit loop if set break flag
   }

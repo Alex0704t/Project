@@ -479,6 +479,32 @@ void PCF8812_Button(uint8_t* butt_u, uint8_t* butt_1, uint8_t* butt_2) {
   PCF8812_Putline(str, 7);
 }
 
+void PCF8812_Butt_name(uint8_t button, uint8_t* name) {
+  switch(button)
+  {
+    case button_1:
+      for(uint8_t i = 0; i < 6; i++) {
+          PCF8812_Set_Char(*name, 7, i);
+          name++;
+      }
+      break;
+    case user_button:
+      for(uint8_t i = 7; i < 10; i++) {
+          PCF8812_Set_Char(*name, 7, i);
+          name++;
+      }
+      break;
+    case button_2:
+      for(uint8_t i = 11; i < 17; i++) {
+          PCF8812_Set_Char(*name, 7, i);
+          name++;
+      }
+      break;
+    default:
+      break;
+  }
+}
+
 void PCF8812_Butt_ind(uint8_t button) {
   switch(button)
   {
@@ -531,19 +557,19 @@ uint32_t PCF8812_Input_Int(uint8_t* name, uint32_t min, uint32_t max) {
   //view selected digit
   PCF8812_Set_Symb(corner_up, 2, (PCF8812_LCD_LINE - n_dig)/2 + n_dig - col);
   PCF8812_Set_Symb(corner_down, 4, (PCF8812_LCD_LINE - n_dig)/2 + n_dig - col);
-  if(Get_Button(button_1))//move the input field to the left
+  if(Button_Get(button_1))//move the input field to the left
     {
       //increase to the maximum and return to a minimum
       mul = (mul < max_mul) ? (mul * 10) : 1;//
       col = (col < n_dig) ? (col + 1) : 1;
     }
-  if(Get_Button(button_2))//move the input field to the right
+  if(Button_Get(button_2))//move the input field to the right
     {
       //decrease to the minimum and return to a maximum
       mul = (mul > 1) ? (mul / 10) : max_mul;
       col = (col > 1) ? (col - 1) : n_dig;
     }
-  if(Get_Button(user_button))//return result
+  if(Button_Get(user_button))//return result
     {
       PCF8812_Clear();
       return (result < min) ? min : result;//min limit of value
@@ -567,11 +593,11 @@ uint32_t PCF8812_Set_Param(Par_list* list) {
       PCF8812_Title(list->name);
       PCF8812_Button("OK", "DOWN", "UP");
       uint8_t i = Get_Enc_Count(list->num - 1);
-      if(Get_Button(button_1))
+      if(Button_Get(button_1))
         DECR_ENC(1);
-      if(Get_Button(button_2))
+      if(Button_Get(button_2))
         INCR_ENC(1);
-      if(Get_Button(user_button))//return result
+      if(Button_Get(user_button))//return result
         return list->item[i].code;
       PCF8812_Putline_Centre(list->item[i].name, 4);
       PCF8812_DELAY;
@@ -599,7 +625,7 @@ void PCF8812_Input_Time() {
     //view selected digit
     PCF8812_Set_Symb(corner_up, 2, col);
     PCF8812_Set_Symb(corner_down, 4, col);
-    if(Get_Button(button_1))
+    if(Button_Get(button_1))
       {
         col--;//move the input field to the left
         if(col % 3 == 2)//jump across separator
@@ -607,7 +633,7 @@ void PCF8812_Input_Time() {
         if(col < 0)//move on circle
           col = PCF8812_LCD_LINE - 1;
       }
-    if(Get_Button(button_2))
+    if(Button_Get(button_2))
       {
         col++;//move the input field to the right
         if(col % 3 == 2)//jump across separator
@@ -615,7 +641,7 @@ void PCF8812_Input_Time() {
         if(col > PCF8812_LCD_LINE - 1)//move on circle
           col = 0;
       }
-    if(Get_Button(user_button))//set time
+    if(Button_Get(user_button))//set time
       {
         Set_Time(&temp);//set time
         return;

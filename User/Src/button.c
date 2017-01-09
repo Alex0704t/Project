@@ -28,7 +28,7 @@ void Button_Init(uint8_t button) {
   }
 }
 
-void ButtINT_Init(void) {
+void Button_Int_Init(void) {
 	//Button_Init();
 	// set EXTI registers bit 8 has effect to both 8 and 9 lines
 	// bit 9 has no effect
@@ -45,7 +45,7 @@ void ButtINT_Init(void) {
 }
 
 
-uint8_t Get_Button(uint8_t button) {
+uint8_t Button_Get(uint8_t button) {
   uint8_t temp = butt[button].state;
   butt[button].state = button_released;
   return temp;
@@ -61,7 +61,6 @@ void EXTI0_IRQHandler(void) {
 void EXTI9_5_IRQHandler(void) {
   if((EXTI->PR & EXTI_PR_PR8) == EXTI_PR_PR8) {
       EXTI->PR |= EXTI_PR_PR8;//clear pending bit of set 1
-
     }
   }
 
@@ -76,6 +75,7 @@ void Button_Handler() {
 }
 
 void Button_Handle(uint8_t button) {
+  PCF8812_Butt_name(button, butt[button].name);
   //if button pressing
       if(Check_Button(button)) {
           PCF8812_On();
@@ -120,7 +120,7 @@ void Button_Handle(uint8_t button) {
       }
 }
 
-void Exec_button(uint8_t button) {
+void Button_Execute(uint8_t button) {
 //execute short press action
    if(butt[button].state == button_pressed) {
        butt[button].state = button_released;
@@ -147,33 +147,38 @@ void Exec_button(uint8_t button) {
     }
 }
 
-void Execute_buttons() {
+void Buttons_Executor() {
   if(butt[user_button].enable) {
-      Exec_button(user_button);
+      Button_Execute(user_button);
   }
   if(butt[button_1].enable) {
-      Exec_button(button_1);
+      Button_Execute(button_1);
   }
   if(butt[button_2].enable) {
-      Exec_button(button_2);
+      Button_Execute(button_2);
   }
 }
 
-void Set_Button(uint8_t button, button_s *in) {
-
-  Enable_button(button);
+void Button_Set(uint8_t button, button_s *in) {
+  Button_Enable(button);
   if(!in->hold_act) {
      in->hold_act = in->press_act;
      in->repeat_ms = 500;
   }
   butt[button] = *in;
-  //PCF8812_Button(butt[0].name, butt[1].name, butt[2].name);
 }
 
-void Enable_button(uint8_t button) {
+void Button_Enable(uint8_t button) {
   butt[button] = (button_s){};
   Button_Init(button);
   butt[button].enable = SET;
+}
+
+void Button_Set_Name(uint8_t button, uint8_t* name) {
+  butt[button] = (button_s){};
+  Button_Init(button);
+  butt[button].enable = SET;
+  butt[button].name = name;
 }
 
 uint8_t Check_Button(uint8_t button) {

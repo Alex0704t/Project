@@ -458,11 +458,11 @@ void SetVolume(void)
     PCF8812_Clear();
     PCF8812_Title("VOLUME");
     PCF8812_Button("OK", "-10%", "+10%");
-    if(Get_Button(button_1))
+    if(Button_Get(button_1))
       DECR_ENC(VOLUME_STEP);
-    if(Get_Button(button_2))
+    if(Button_Get(button_2))
       INCR_ENC(VOLUME_STEP);
-    if(Get_Button(user_button))
+    if(Button_Get(user_button))
       break;
     uint8_t volume = Get_Enc_Count(100);
     PCF8812_Percent("Volume", volume, 2);

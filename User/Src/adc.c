@@ -93,7 +93,7 @@ void Read_Temp(void) {
       value = Read_ADC1();
       //USB_Send_Int(value);
       PCF8812_SValue("temp", value, "C", 2);
-      if(Get_Button(user_button))
+      if(Button_Get(user_button))
           break;
       delay_ms(500);
     }
@@ -112,7 +112,7 @@ void Read_Voltage(void) {
       //Logview_Send(value);
       //LCD_Value("Vdc", value, "mV", 2);
       PCF8812_Float_Value("Vdc ", value/1000.0, "V", 2);
-      if(Get_Button(user_button))
+      if(Button_Get(user_button))
           break;
       delay_ms(500);
     }

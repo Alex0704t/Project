@@ -54,14 +54,12 @@ uint8_t Read_from_USB(uint8_t *data){
 void USB_Echo(){
   uint8_t Buffer[HID_IN_PACKET] = {0};
   uint8_t str[PCF8812_STR_SIZ] = "";
-  while(1)
-    {
+  while(1) {
     PCF8812_Clear();
     PCF8812_Title("USB ECHO");
-//    button_s temp = {.enable = SET};
-//    Set_Button(user_button, &temp);
-    PCF8812_Button("OK", "", "");
-    if(Get_Button(user_button))
+    button_s temp = {.enable = SET, .name = "OK"};
+    Button_Set(user_button, &temp);
+    if(Button_Get(user_button))
       break;
     if(Read_from_USB(Buffer)){
       Write_to_USB(Buffer);
@@ -70,7 +68,7 @@ void USB_Echo(){
     PCF8812_Putline_Centre(str, 4);
     PCF8812_DELAY;
     ClearBuf(Buffer, HID_IN_PACKET);
-    }
+  }
 }
 
 void USB_Send_int(int32_t value){
@@ -80,28 +78,24 @@ void USB_Send_int(int32_t value){
   ClearBuf(Buffer, HID_IN_PACKET);
 }
 
-void USB_Count(uint32_t period_ms){
-    button_s temp = {.enable = SET};
-    Set_Button(user_button, &temp);
-    uint8_t i = 0;
-    while(1)
-    {
 
+void USB_Count(uint32_t period_ms) {
+  Button_Set_Name(user_button, "OK");
+  Button_Set_Name(button_1, "START");
+  Button_Set_Name(button_2, "STOP");
+
+  uint8_t i = 0;
+  while(1) {
     PCF8812_Clear();
     PCF8812_Title("USB COUNT");
-    PCF8812_Button("OK", "", "");
-
-    if(Get_Button(user_button)){
+    if(Button_Get(user_button)) {
       break;
     }
-
     PCF8812_UValue("count", i, "", 4);
-
-    if(Check_delay_ms(period_ms)){
+    if(Check_delay_ms(period_ms)) {
        USB_Send_int(i);
        i++;
     }
-
     PCF8812_DELAY;
-    }
+  }
 }

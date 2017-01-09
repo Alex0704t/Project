@@ -87,17 +87,17 @@ rtc_time_s Input_Time()
   PCF8812_Clear();
   PCF8812_Title("TIME SETTING");
   PCF8812_Button("OK", " <", "> ");
-  if(Get_Button(button_1))//next digit
+  if(Button_Get(button_1))//next digit
     {
       col++;
       RESET_ENC;
     }
-  if(Get_Button(button_2))//previous digit
+  if(Button_Get(button_2))//previous digit
     {
       col--;
       RESET_ENC;
     }
-  if(Get_Button(user_button))//return result
+  if(Button_Get(user_button))//return result
     {
       return (rtc_time_s){d[11]*10 + d[10], 0, d[9]*10 + d[8], d[7]*10 + d[6], \
                         0, d[5]*10 + d[4], d[3]*10 + d[2], d[1]*10 + d[0]};

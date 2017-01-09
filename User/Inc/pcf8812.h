@@ -357,6 +357,7 @@ void PCF8812_Time(uint8_t view_mode, uint8_t line);
 void PCF8812_Option(uint8_t *option, uint8_t line);
 void PCF8812_Cursor(uint8_t line);
 void PCF8812_Button(uint8_t* butt_u, uint8_t* butt_1, uint8_t* butt_2);
+void PCF8812_Butt_name(uint8_t button, uint8_t* name);
 void PCF8812_Butt_ind(uint8_t button);
 uint32_t PCF8812_Input_Int(uint8_t* name, uint32_t min, uint32_t max);
 void PCF8812_Input_Time();

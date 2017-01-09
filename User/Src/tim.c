@@ -144,8 +144,8 @@ void Tim5_Init(uint8_t frequency)
 void TIM5_IRQHandler() {
   if(TIM5->SR & TIM_SR_UIF) {
     TIM5->SR &= ~TIM_SR_UIF;//clear update interrupt flag
+    Button_Handler();
     PCF8812_Handler();
     PCF8812_Count();
-    Button_Handler();
     }
 }
