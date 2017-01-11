@@ -34,7 +34,7 @@ void Button_Int_Init(void);
 typedef void (*p_func)(void);
 
 typedef struct button_s{
-  uint8_t* name;
+  char* name;
   uint8_t enable;
   uint32_t repeat_ms;
   volatile/*__IO*/ uint8_t state;
@@ -52,8 +52,8 @@ void Button_Handle(uint8_t button);
 void Button_Execute(uint8_t button);
 void Buttons_Executor();
 
-void Button_Enable(uint8_t button);
+inline void Button_Enable(uint8_t button);
 void Button_Set(uint8_t button, button_s *in);
-void Button_Set_Name(uint8_t button, uint8_t* name);
+void Button_Set_Name(uint8_t button, char* name);
 
 #endif

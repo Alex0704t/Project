@@ -216,7 +216,7 @@ void PCF8812_Message(uint8_t *s) {
 }
 
 //View menu name in line 0
-void PCF8812_Title(uint8_t *s) {
+void PCF8812_Title(char *s) {
   PCF8812_Putline_Centre(s, 0);
 }
 
@@ -255,8 +255,8 @@ void PCF8812_SValue(uint8_t *name, int32_t value, uint8_t *unit, uint8_t line) {
   PCF8812_Putline_Centre(str, line);
 }
 
-void PCF8812_UValue(uint8_t *name, uint32_t value, uint8_t *unit, uint8_t line) {
-  uint8_t str[PCF8812_STR_SIZ];
+void PCF8812_UValue(char *name, uint32_t value, char *unit, uint8_t line) {
+  char str[PCF8812_STR_SIZ];
   //call snprintf for calculate wide for name
   uint8_t name_wide = PCF8812_LCD_LINE - snprintf(str, PCF8812_STR_SIZ, " %u%.3s", value, unit);
   snprintf(str, PCF8812_STR_SIZ, "%.*s %u%.3s", name_wide, name, value, unit);
@@ -483,19 +483,19 @@ void PCF8812_Butt_name(uint8_t button, uint8_t* name) {
   switch(button)
   {
     case button_1:
-      for(uint8_t i = 0; i < 6; i++) {
+      for(uint8_t i = 0; i < 5; i++) {
           PCF8812_Set_Char(*name, 7, i);
           name++;
       }
       break;
     case user_button:
-      for(uint8_t i = 7; i < 10; i++) {
+      for(uint8_t i = 6; i < 11; i++) {
           PCF8812_Set_Char(*name, 7, i);
           name++;
       }
       break;
     case button_2:
-      for(uint8_t i = 11; i < 17; i++) {
+      for(uint8_t i = 12; i < 17; i++) {
           PCF8812_Set_Char(*name, 7, i);
           name++;
       }
@@ -514,15 +514,15 @@ void PCF8812_Butt_ind(uint8_t button) {
       PCF8812_Inv_Char(7, 2);
       PCF8812_Inv_Char(7, 3);
       PCF8812_Inv_Char(7, 4);
-      PCF8812_Inv_Char(7, 5);
       break;
     case user_button:
+      PCF8812_Inv_Char(7, 6);
       PCF8812_Inv_Char(7, 7);
       PCF8812_Inv_Char(7, 8);
       PCF8812_Inv_Char(7, 9);
+      PCF8812_Inv_Char(7, 10);
       break;
     case button_2:
-      PCF8812_Inv_Char(7, 11);
       PCF8812_Inv_Char(7, 12);
       PCF8812_Inv_Char(7, 13);
       PCF8812_Inv_Char(7, 14);

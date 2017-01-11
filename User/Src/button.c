@@ -168,16 +168,15 @@ void Button_Set(uint8_t button, button_s *in) {
   butt[button] = *in;
 }
 
-void Button_Enable(uint8_t button) {
+inline void Button_Enable(uint8_t button) {
   butt[button] = (button_s){};
   Button_Init(button);
   butt[button].enable = SET;
 }
 
-void Button_Set_Name(uint8_t button, uint8_t* name) {
-  butt[button] = (button_s){};
-  Button_Init(button);
-  butt[button].enable = SET;
+void Button_Set_Name(uint8_t button, char* name) {
+  if(butt[button].enable != SET)
+    Button_Enable(button);
   butt[button].name = name;
 }
 

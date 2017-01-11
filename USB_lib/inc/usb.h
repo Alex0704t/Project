@@ -19,10 +19,10 @@
 #include "usb_core.h"
 
 void USB_HID_Init();
-uint8_t USB_HID_SendReport(uint8_t *report, uint16_t len);
-void ClearBuf(uint8_t* data, uint8_t len);
-uint8_t Write_to_USB(uint8_t* data);
-uint8_t Read_from_USB(uint8_t *data);
+uint8_t USB_HID_SendReport(char* report, uint16_t len);
+inline void ClearBuf(char* data, uint8_t len);
+uint8_t Write_to_USB(char* data);
+uint8_t Read_from_USB(char* data);
 void USB_Echo();
 void USB_Send_int(int32_t value);
 void USB_Count(uint32_t period_ms);
