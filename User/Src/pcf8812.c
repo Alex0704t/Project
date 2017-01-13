@@ -248,24 +248,24 @@ void PCF8812_Putline_Right(char* s, uint8_t line) {
 void PCF8812_SValue(char* name, int32_t value, char* unit, uint8_t line) {
   char str[PCF8812_STR_SIZ];
   //call snprintf for calculate wide for name
-  uint8_t name_wide = PCF8812_LCD_LINE - snprintf(str, PCF8812_STR_SIZ, "% i%.3s", value, unit);
-  snprintf(str, PCF8812_STR_SIZ, "%.*s% i%.3s", name_wide, name, value, unit);
+  uint8_t name_wide = PCF8812_LCD_LINE - snprintf(str, PCF8812_STR_SIZ, "% li%.3s", value, unit);
+  snprintf(str, PCF8812_STR_SIZ, "%.*s% li%.3s", name_wide, name, value, unit);
   PCF8812_Putline_Centre(str, line);
 }
 
 void PCF8812_UValue(char* name, uint32_t value, char* unit, uint8_t line) {
   char str[PCF8812_STR_SIZ];
   //call snprintf for calculate wide for name
-  uint8_t name_wide = PCF8812_LCD_LINE - snprintf(str, PCF8812_STR_SIZ, " %u%.3s", value, unit);
-  snprintf(str, PCF8812_STR_SIZ, "%.*s %u%.3s", name_wide, name, value, unit);
+  uint8_t name_wide = PCF8812_LCD_LINE - snprintf(str, PCF8812_STR_SIZ, " %lu%.3s", value, unit);
+  snprintf(str, PCF8812_STR_SIZ, "%.*s %lu%.3s", name_wide, name, value, unit);
   PCF8812_Putline_Centre(str, line);
 }
 
 void PCF8812_Hex_Value(char* name, int32_t value, uint8_t line) {
   char str[PCF8812_STR_SIZ];
   //call snprintf for calculate wide for name
-  uint8_t name_wide = PCF8812_LCD_LINE - snprintf(str, PCF8812_STR_SIZ, " %#x", value);
-  snprintf(str, PCF8812_STR_SIZ, "%.*s %#x", name_wide, name, value);
+  uint8_t name_wide = PCF8812_LCD_LINE - snprintf(str, PCF8812_STR_SIZ, " %#lx", value);
+  snprintf(str, PCF8812_STR_SIZ, "%.*s %#lx", name_wide, name, value);
   PCF8812_Putline_Centre(str, line);
 }
 #ifdef USE_SPRINTF
@@ -459,48 +459,29 @@ void PCF8812_Cursor(uint8_t line) {
   PCF8812_Inv_Line(line);
 }
 
-void PCF8812_Button(char* butt_u, char* butt_1, char* butt_2) {
-  char str[PCF8812_STR_SIZ] = "";
-  uint8_t sp_num = 0;
-  uint8_t len_1 = strlen(butt_1);
-  uint8_t len_2 = strlen(butt_2);
-  uint8_t len_u = strlen(butt_u);
-  len_1 = (len_1 > 6) ? 6 : len_1;
-  len_2 = (len_2 > 6) ? 6 : len_2;
-  len_u = (len_u > 3) ? 3 : len_u;
-  sp_num = PCF8812_LCD_LINE - (len_1 + len_2 + len_u);
-  strncpy(str, butt_1, 6);
-  strncat(str, EMPTY_STR, sp_num / 2);
-  strncat(str, butt_u, 3);
-  strncat(str, EMPTY_STR, sp_num / 2 + sp_num % 2);
-  strncat(str, butt_2, 6);
-  PCF8812_Putline(str, 7);
-}
 
 void PCF8812_Butt_name(uint8_t button, char* name) {
+  uint8_t len = 0, start = 0, end = 0;
+  len = strlen(name);
   switch(button)
   {
     case button_1:
-      for(uint8_t i = 0; i < 5; i++) {
-          PCF8812_Set_Char(*name, 7, i);
-          name++;
-      }
+      start = 0;
+      end = len;
       break;
     case user_button:
-      for(uint8_t i = 6; i < 11; i++) {
-          PCF8812_Set_Char(*name, 7, i);
-          name++;
-      }
+      start = 6 + (5 - len) / 2;
+      end = start + len;
       break;
     case button_2:
-      for(uint8_t i = 12; i < 17; i++) {
-          PCF8812_Set_Char(*name, 7, i);
-          name++;
-      }
+      start = 17 - len;
+      end = 17;
       break;
     default:
       break;
   }
+  for(uint8_t i = start; i < end; i++)
+      PCF8812_Set_Char(*name++, 7, i);
 }
 
 void PCF8812_Butt_ind(uint8_t button) {
@@ -547,7 +528,9 @@ uint32_t PCF8812_Input_Int(char* name, uint32_t min, uint32_t max) {
   {
   PCF8812_Clear();
   PCF8812_Title(name);
-  PCF8812_Button("OK", " <", "> ");
+  Button_Set_Name(user_button, "OK");
+  Button_Set_Name(button_1, " <");
+  Button_Set_Name(button_2, "> ");
   //view value
   sprintf(str, "%.*s%.*u%.*s", (PCF8812_LCD_LINE - n_dig)/2, EMPTY_STR, n_dig, result, \
                                (PCF8812_LCD_LINE - n_dig)/2 + (PCF8812_LCD_LINE - n_dig)%2, EMPTY_STR);
@@ -589,7 +572,9 @@ uint32_t PCF8812_Set_Param(Par_list* list) {
     {
       PCF8812_Clear();
       PCF8812_Title(list->name);
-      PCF8812_Button("OK", "DOWN", "UP");
+      Button_Set_Name(user_button, "OK");
+      Button_Set_Name(button_1, "DOWN");
+      Button_Set_Name(button_2, "UP");
       uint8_t i = Get_Enc_Count(list->num - 1);
       if(Button_Get(button_1))
         DECR_ENC(1);
@@ -606,7 +591,7 @@ uint32_t PCF8812_Set_Param(Par_list* list) {
 void PCF8812_Input_Time() {
   //time structure set to 01.01.00 00:00:00
   rtc_time_s temp = {.date = 1, .month = 1};
-  uint8_t str[PCF8812_STR_SIZ];
+  char str[PCF8812_STR_SIZ];
   //array for choice of limit days of month
   uint8_t days[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
   int8_t col = 7;//set cursor to input year
@@ -616,7 +601,9 @@ void PCF8812_Input_Time() {
     {
     PCF8812_Clear();
     PCF8812_Putline_Centre("SET DATE & TIME", 0);
-    PCF8812_Button("OK", " <", "> ");
+    Button_Set_Name(user_button, "OK");
+    Button_Set_Name(button_1, " <");
+    Button_Set_Name(button_2, "> ");
     Get_Time_String(&temp, str, view_all);
     PCF8812_Putline_Centre(str, 3);
     PCF8812_Putline("dd.mm.yy HH:MM:SS", 5);//view data & time format

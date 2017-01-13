@@ -24,9 +24,9 @@
 typedef void (*p_func)(void);
 
 typedef struct menu {
-  uint8_t* name;//menu name
+  char* name;//menu name
   uint8_t num;//options num
-  uint8_t *option[MAX_OPT];//options names
+  char* option[MAX_OPT];//options names
   struct menu* next_menu[MAX_OPT];//next menu pointers
   p_func action[MAX_OPT];//option functions pointers
   p_func Init;//initialisation function pointer

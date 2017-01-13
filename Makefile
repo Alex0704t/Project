@@ -58,7 +58,7 @@ CFLAGS+=				-ggdb
 
 # Preprocessor flags.
 CPPFLAGS:=				-DSTM32F407xx
-CPPFLAGS+=				-DUSE_STD_PERIPH_DRIVER
+#CPPFLAGS+=				-DUSE_STD_PERIPH_DRIVER
 #CPPFLAGS+= 			-DUSE_HAL_DRIVER
 CPPFLAGS+=				-D__GNUC__
 CPPFLAGS+=				$(foreach dir, $(INC_DIRS), -I$(dir))

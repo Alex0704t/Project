@@ -451,20 +451,22 @@ void AnalogWave_Set(uint16_t frequency, uint8_t volume)
 
 void SetVolume(void)
 {
-  //static uint8_t volume = 0;
+  static uint8_t volume = 0;
   RESET_ENC;
   while(1)
     {
     PCF8812_Clear();
     PCF8812_Title("VOLUME");
-    PCF8812_Button("OK", "-10%", "+10%");
+    Button_Set_Name(user_button, "OK");
+    Button_Set_Name(button_1, "-10%");
+    Button_Set_Name(button_2, "+10%");
     if(Button_Get(button_1))
       DECR_ENC(VOLUME_STEP);
     if(Button_Get(button_2))
       INCR_ENC(VOLUME_STEP);
     if(Button_Get(user_button))
       break;
-    uint8_t volume = Get_Enc_Count(100);
+    /*static uint8_t */volume = Get_Enc_Count(100);
     PCF8812_Percent("Volume", volume, 2);
     EVAL_AUDIO_VolumeCtl(volume);
     PCF8812_DELAY;

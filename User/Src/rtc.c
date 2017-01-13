@@ -77,7 +77,8 @@ void Set_Time(rtc_time_s* in)
 
 rtc_time_s Input_Time()
 {
-  uint8_t str[PCF8812_LCD_LINE];
+  /*ToDo : need fixed crash (push OK button) */
+  char str[PCF8812_LCD_LINE];
   uint8_t d[12] = {0};//array for 12 decimal digits
   uint8_t temp = 0;
   uint8_t col = 0;//selected decimal digit
@@ -86,7 +87,9 @@ rtc_time_s Input_Time()
   {
   PCF8812_Clear();
   PCF8812_Title("TIME SETTING");
-  PCF8812_Button("OK", " <", "> ");
+  Button_Set_Name(user_button, "OK");
+  Button_Set_Name(button_1, " <");
+  Button_Set_Name(button_2, "> ");
   if(Button_Get(button_1))//next digit
     {
       col++;
@@ -121,7 +124,7 @@ rtc_time_s Input_Time()
   }
 }
 
-void Get_Time_String(void* in, uint8_t* s, uint8_t view_mode){
+void Get_Time_String(void* in, char* s, uint8_t view_mode){
   rtc_time_s temp;
   if(!in)//no passing time structure pointer
     temp = Get_Time();

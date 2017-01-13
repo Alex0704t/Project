@@ -89,7 +89,7 @@ void Read_Temp(void) {
   while(1) {
       PCF8812_Clear();
       PCF8812_Title("TEMP SENSOR");
-      PCF8812_Button("OK", "", "");
+      Button_Set_Name(user_button, "OK");
       value = Read_ADC1();
       //USB_Send_Int(value);
       PCF8812_SValue("temp", value, "C", 2);
@@ -105,7 +105,7 @@ void Read_Voltage(void) {
   while(1) {
       PCF8812_Clear();
       PCF8812_Putline("VOLTAGE  (PA1-IN)", 0);
-      PCF8812_Button("OK", "", "");
+      Button_Set_Name(user_button, "OK");
       value = Read_ADC1();
       value = value*U_3V/4095;
       //USB_Send_Int(value);

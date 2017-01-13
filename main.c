@@ -1,21 +1,7 @@
 /**
   ******************************************************************************
   * @file    main.c 
-  * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    19-September-2011
   * @brief   Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
-  * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
-  * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
-  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
-  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
-  *
-  * <h2><center>&copy; COPYRIGHT 2011 STMicroelectronics</center></h2>
   ******************************************************************************
   */ 
 
@@ -24,20 +10,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-
-/** @addtogroup STM32F4-Discovery_USB_HID
-  * @{
-  */
-
-/* Private macro -------------------------------------------------------------*/
-
-/* Private variables ---------------------------------------------------------*/
-  
-//uint8_t InBuffer[63] = {'H','e','l','l','o', '\n'}, OutBuffer[63];
-//uint8_t Buffer[63];
-
-
-/* Private functions ---------------------------------------------------------*/
 
 /**
   * @brief  Main program.
@@ -49,9 +21,6 @@ int main(void)
 {
   MCU_Init();
 
-//  button_s temp = {.enable = SET};
-//  Set_Button(user_button, &temp);
-//  Set_Button(button_1, &temp);
 
   while (1)
   {
@@ -74,8 +43,9 @@ int main(void)
 //    ClearBuf(&Buffer, 63);
 //
 //    USB_HID_SendReport("HI\n", 64);
-	  //USB_Echo();
-	  USB_Count(1000);
+//	  USB_Echo();
+//	  USB_Count(1000);
+	  Main_menu();
 
   }
 }

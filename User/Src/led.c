@@ -42,7 +42,9 @@ void Led_Brightness(uint8_t led, uint8_t *name) {
   while(1) {
   PCF8812_Clear();
   PCF8812_Title(name);
-  PCF8812_Button("OK", "-10%", "+10%");
+  Button_Set_Name(user_button, "OK");
+  Button_Set_Name(button_1, "-10%");
+  Button_Set_Name(button_2, "+10%");
   if(Button_Get(button_1))
     DECR_ENC(BRIGHT_STEP);
   if(Button_Get(button_2))
@@ -138,7 +140,9 @@ void Set_Blink(uint8_t led, uint8_t *name)
     {
     PCF8812_Clear();
     PCF8812_Title(name);
-    PCF8812_Button("OK", "-0.5s", "+0.5s");
+    Button_Set_Name(user_button, "OK");
+    Button_Set_Name(button_1, "-0.5s");
+    Button_Set_Name(button_2, "+0.5s");
     if(Button_Get(button_1))
       DECR_ENC(TIME_STEP);
     if(Button_Get(button_2))
@@ -155,7 +159,9 @@ void Set_Blink(uint8_t led, uint8_t *name)
     {
     PCF8812_Clear();
     PCF8812_Title(name);
-    PCF8812_Button("OK", "-0.5s", "+0.5s");
+    Button_Set_Name(user_button, "OK");
+    Button_Set_Name(button_1, "-0.5s");
+    Button_Set_Name(button_2, "+0.5s");
     if(Button_Get(button_1))
       DECR_ENC(TIME_STEP);
     if(Button_Get(button_2))

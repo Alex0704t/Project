@@ -28,7 +28,7 @@
 
 extern USB_OTG_CORE_HANDLE           USB_OTG_dev;
 extern uint32_t USBD_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev);
-extern uint8_t  Buffer[];
+//extern uint8_t  Buffer[];
 
 
 #ifdef USB_OTG_HS_DEDICATED_EP1_ENABLED

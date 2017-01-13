@@ -29,7 +29,7 @@ static const uint16_t sin_table[SINE_RES] = { 2048, 2145, 2242, 2339, 2435, 2530
                                       1378, 1471, 1565, 1660, 1756, 1853, 1950, 2047 };
 
 
-static uint8_t i = 0;
+//static uint8_t i = 0;
 
 #define DAC_DATA        0
 #define DAC_TRIANGLE    1

@@ -107,7 +107,7 @@ menu_s usb_menu = {
     3,
     {"ECHO",   "COUNT",    "BACK"},
     {NULL,     NULL,       NULL},
-    {/*USB_Echo*/No_op, Send_Count, Back_menu},
+    {USB_Echo, Send_Count, Back_menu},
     No_op,
     No_op,
     DISABLE,
@@ -201,7 +201,7 @@ void Back_menu() {
   //Enter_menu(active_menu->prev_menu);
   brk_flag = 1;
   //RESET_ENC;
-  //active_menu->DeInit();
+  active_menu->DeInit();
 }
 
 void Sel_item() {
@@ -242,8 +242,8 @@ void Enter_menu(menu_s *menu) {
     PCF8812_Time(view_all, 0);//view time in top of display
   else
     PCF8812_Title(active_menu->name);//else view menu name
-  PCF8812_Button(active_menu->butt[0]->name, active_menu->butt[1]->name, \
-             active_menu->butt[2]->name);//view buttons names
+//  PCF8812_Button(active_menu->butt[0]->name, active_menu->butt[1]->name, \
+//             active_menu->butt[2]->name);//view buttons names
   for(uint8_t i = 0; i < active_menu->num; i++)
     PCF8812_Option(active_menu->option[i], i + 1);//view menu items
   cur_pos = Get_Enc_Count(active_menu->num - 1);//get cursor position number
@@ -340,7 +340,7 @@ void LED_all_Blink(void)
  */
 void Send_Count(void)
 {
-  //USB_Count(USB_SEND_PERIOD);
+  USB_Count(USB_SEND_PERIOD);
 }
 
 /*

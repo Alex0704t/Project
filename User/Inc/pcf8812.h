@@ -75,8 +75,8 @@
                                 snprintf(s, PCF8812_STR_SIZ, #var ":%d", var);\
                                 PCF8812_Putline(s, line);}
 
-uint8_t __IO PCF8812_buff[PCF8812_BUFSIZ];
-uint8_t __IO PCF8812_buff_state;
+volatile char PCF8812_buff[PCF8812_BUFSIZ];
+volatile uint8_t PCF8812_buff_state;
 
 
 enum PCF8812_buff_state
@@ -98,12 +98,12 @@ enum view_mode
 
 
 struct Par {
-  uint8_t* name;
+  char* name;
   uint8_t code;
 };
 
 typedef struct Par_list {
-  uint8_t* name;
+  char* name;
   uint8_t num;
   struct Par item[];
 }Par_list;
@@ -356,7 +356,6 @@ void PCF8812_Triangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t x3
 void PCF8812_Time(uint8_t view_mode, uint8_t line);
 void PCF8812_Option(char* option, uint8_t line);
 void PCF8812_Cursor(uint8_t line);
-void PCF8812_Button(char* butt_u, char* butt_1, char* butt_2);
 void PCF8812_Butt_name(uint8_t button, char* name);
 void PCF8812_Butt_ind(uint8_t button);
 uint32_t PCF8812_Input_Int(char* name, uint32_t min, uint32_t max);

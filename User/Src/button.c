@@ -79,6 +79,7 @@ void Button_Handle(uint8_t button) {
   //if button pressing
       if(Check_Button(button)) {
           PCF8812_On();
+          PCF8812_Butt_ind(button);
   //increment counter
           butt[button].count++;
   //button hold

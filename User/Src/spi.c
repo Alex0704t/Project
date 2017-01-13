@@ -123,7 +123,7 @@ void GetAxData(void)
 	DMA2_Stream3->CR |= DMA_SxCR_EN;//stream enable
 }
 
-extern __IO uint8_t PCF8812_buff[PCF8812_BUFSIZ];
+extern volatile char PCF8812_buff[PCF8812_BUFSIZ];
 
 void SPI2_Init(void)
 {

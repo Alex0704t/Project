@@ -9,7 +9,7 @@
 #define USER_ACCELERO_H_
 
 #include "user.h"
-
+#include "stm32f4xx.h"
 
 
 #define CS_ON() GPIOE->BSRR = GPIO_BSRR_BR_3
