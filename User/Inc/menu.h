@@ -29,22 +29,44 @@ typedef struct menu {
   char* option[MAX_OPT];//options names
   struct menu* next_menu[MAX_OPT];//next menu pointers
   p_func action[MAX_OPT];//option functions pointers
+  struct menu* prev_menu;//previous menu pointer
   p_func Init;//initialisation function pointer
   p_func DeInit;//deinitialisation function pointer
   uint8_t init_flag;//initialisation flag
   struct button_s* butt[BUTT_NUM];
 }menu_s;//menu structure
 
+/*********************************************************************/
+menu_s main_menu;
+/*********************************************************************/
+menu_s led_menu;
+menu_s led0_menu;
+menu_s led1_menu;
+menu_s led2_menu;
+menu_s led3_menu;
+menu_s led_all_menu;
+/*********************************************************************/
+menu_s usb_menu;
+/*********************************************************************/
+menu_s adc_menu;
+/*********************************************************************/
+menu_s audio_menu;
+menu_s beep_menu;
+menu_s wave_menu;
+/*********************************************************************/
+menu_s setting_menu;
+/*********************************************************************/
+
 
 
 void Enter_menu(menu_s *menu);
-void Back_menu();
-void No_op();
-void Go_menu();
+inline void Back_menu();
+inline void No_op();
+inline void Go_menu();
 void Sel_item();
-void Next_item();
-void Prev_item();
-void Main_menu();
+inline void Next_item();
+inline void Prev_item();
+inline void Main_menu();
 /*********************************************************************/
 void LED0_Toggle(void);
 void LED1_Toggle(void);

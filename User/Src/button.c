@@ -2,7 +2,6 @@
 
 button_s butt[3] = {0};
 
-
 void Button_Init(uint8_t button) {
   switch(button) {
     case user_button:
@@ -123,7 +122,7 @@ void Button_Handle(uint8_t button) {
 
 void Button_Execute(uint8_t button) {
 //execute short press action
-   //PCF8812_Butt_name(button, butt[button].name);
+   PCF8812_Butt_name(button, butt[button].name);
    if(butt[button].state == button_pressed) {
        butt[button].state = button_released;
        butt[button].press_act();
@@ -162,7 +161,8 @@ void Buttons_Executor() {
 }
 
 void Button_Set(uint8_t button, button_s *in) {
-  Button_Enable(button);
+  if(butt[button].enable != SET)
+    Button_Enable(button);
   if(!in->hold_act) {
      in->hold_act = in->press_act;
      in->repeat_ms = 500;
@@ -171,7 +171,6 @@ void Button_Set(uint8_t button, button_s *in) {
 }
 
 inline void Button_Enable(uint8_t button) {
-  butt[button] = (button_s){};
   Button_Init(button);
   butt[button].enable = SET;
 }

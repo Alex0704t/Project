@@ -13,8 +13,6 @@
  * *********************************************************************
  */
 static int8_t cur_pos = 0;
-uint8_t brk_flag = 0;
-uint8_t nxt_flag = 0;
 menu_s* active_menu;
 menu_s* prev_menu;
 /*
@@ -28,7 +26,37 @@ button_s back       = {.enable = SET, .name = "BACK", .press_act = Back_menu};
 button_s next       = {.enable = SET, .name = "NEXT", .press_act = Next_item};
 button_s prev       = {.enable = SET, .name = "PREV", .press_act = Prev_item};
 
-
+/*
+ * *********************************************************************
+ * Menu structures
+ * *********************************************************************
+ */
+/*********************************************************************/
+menu_s main_menu = {
+    "MAIN",
+    5,
+    {"LED",      "USB",      "ADC",      "AUDIO",      "SETTINGS"},
+    {&led_menu,  &usb_menu,  &adc_menu,  &audio_menu,  &setting_menu},
+    {Go_menu,    Go_menu,    Go_menu,    Go_menu,      Go_menu},
+    NULL,
+    No_op,
+    No_op,
+    DISABLE,
+    {&sel_item, &prev, &next}
+};
+/*********************************************************************/
+menu_s led_menu = {
+    "LED",
+    6,
+    {"GREEN  (0)", "ORANGE (1)", "RED    (2)", "BLUE   (3)", "ALL",         "BACK"},
+    {&led0_menu,   &led1_menu,   &led2_menu,   &led3_menu,   &led_all_menu, NULL},
+    {Go_menu,      Go_menu,      Go_menu,      Go_menu,      Go_menu,       Back_menu},
+    &main_menu,
+    Tim4_OC_Init,
+    No_op,
+    DISABLE,
+    {&sel_item, &back, &next}
+};
 /*********************************************************************/
 menu_s led0_menu = {
     "LED0 (GREEN)",
@@ -36,6 +64,7 @@ menu_s led0_menu = {
     {"ON/OFF",    "BIGHTNESS", "BLINK",    "BACK"},
     {NULL,        NULL,        NULL,       NULL},
     {LED0_Toggle, LED0_Bright, LED0_Blink, Back_menu},
+    &led_menu,
     No_op,
     No_op,
     DISABLE,
@@ -48,6 +77,7 @@ menu_s led1_menu = {
     {"ON/OFF",    "BIGHTNESS", "BLINK",    "BACK"},
     {NULL,        NULL,        NULL,       NULL},
     {LED1_Toggle, LED1_Bright, LED1_Blink, Back_menu},
+    &led_menu,
     No_op,
     No_op,
     DISABLE,
@@ -60,6 +90,7 @@ menu_s led2_menu = {
     {"ON/OFF",    "BIGHTNESS", "BLINK",    "BACK"},
     {NULL,        NULL,        NULL,       NULL},
     {LED2_Toggle, LED2_Bright, LED2_Blink, Back_menu},
+    &led_menu,
     No_op,
     No_op,
     DISABLE,
@@ -72,6 +103,7 @@ menu_s led3_menu = {
     {"ON/OFF",    "BIGHTNESS", "BLINK",    "BACK"},
     {NULL,        NULL,        NULL,       NULL},
     {LED3_Toggle, LED3_Bright, LED3_Blink, Back_menu},
+    &led_menu,
     No_op,
     No_op,
     DISABLE,
@@ -84,20 +116,8 @@ menu_s led_all_menu = {
     {"ON/OFF",       "BIGHTNESS",    "BLINK",       "BACK"},
     {NULL,           NULL,           NULL,          NULL},
     {LED_all_Toggle, LED_all_Bright, LED_all_Blink, Back_menu},
+    &led_menu,
     No_op,
-    No_op,
-    DISABLE,
-    {&sel_item, &back, &next}
-};
-
-/*********************************************************************/
-menu_s led_menu = {
-    "LED",
-    6,
-    {"GREEN  (0)", "ORANGE (1)", "RED    (2)", "BLUE   (3)", "ALL",         "BACK"},
-    {&led0_menu,   &led1_menu,   &led2_menu,   &led3_menu,   &led_all_menu, NULL},
-    {Go_menu,      Go_menu,      Go_menu,      Go_menu,      Go_menu,       Back_menu},
-    Tim4_OC_Init,
     No_op,
     DISABLE,
     {&sel_item, &back, &next}
@@ -109,6 +129,7 @@ menu_s usb_menu = {
     {"ECHO",   "COUNT",    "BACK"},
     {NULL,     NULL,       NULL},
     {USB_Echo, Send_Count, Back_menu},
+    &main_menu,
     No_op,
     No_op,
     DISABLE,
@@ -121,19 +142,33 @@ menu_s adc_menu = {
     {"TEMPERATURE", "VOLTAGE",    "BACK"},
     {NULL,          NULL,         NULL},
     {Read_Temp,     Read_Voltage, Back_menu},
+    &main_menu,
     No_op,//UB_USB_CDC_Init()
     ADC1_DeInit,
     DISABLE,
     {&sel_item, &back, &next}
 };
 /*********************************************************************/
-
+menu_s audio_menu = {
+    "AUDIO",
+    5,
+    {"BEEP",     "SINE",     "CHIP ID",        "VOLUME",  "BACK"},
+    {&beep_menu, &wave_menu, NULL,             NULL,      NULL},
+    {Go_menu,    Go_menu,    Get_Audiochip_ID, SetVolume, Back_menu},
+    &main_menu,
+    Audio_Init,
+    No_op,
+    DISABLE,
+    {&sel_item, &back, &next}
+};
+/*********************************************************************/
 menu_s beep_menu = {
     "BEEP",
     4,
     {"START",     "SET",    "STOP",    "BACK"},
     {NULL,        NULL,     NULL,      NULL},
     {Beep_Start,  SetBeep,  StopBeep,  Back_menu},
+    &audio_menu,
     No_op,
     No_op,
     DISABLE,
@@ -146,90 +181,75 @@ menu_s wave_menu = {
     {"START",          "SET",        "STOP",          "BACK"},
     {NULL,             NULL,         NULL,            NULL},
     {AnalogWave_Start, Sine_Set,     AnalogWave_Stop, Back_menu},
+    &audio_menu,
     Sine_Init,
     No_op,
     DISABLE,
     {&sel_item, &back, &next}
 };
-
-menu_s audio_menu = {
-    "AUDIO",
-    5,
-    {"BEEP",     "SINE",     "CHIP ID",        "VOLUME",  "BACK"},
-    {&beep_menu, &wave_menu, NULL,             NULL,      NULL},
-    {Go_menu,    Go_menu,    Get_Audiochip_ID, SetVolume, Back_menu},
-    Audio_Init,
-    No_op,
-    DISABLE,
-    {&sel_item, &back, &next}
-};
-
+/*********************************************************************/
 menu_s setting_menu = {
     "SETTINGS",
     5,
     {"DATE & TIME",         "NO_OP",     "NO_OP",        "NO_OP",  "BACK"},
     {NULL,                  NULL,        NULL,           NULL,     NULL},
     {PCF8812_Input_Time,    No_op,       No_op,          No_op,    Back_menu},
+    &main_menu,
     No_op,
     No_op,
     DISABLE,
     {&sel_item, &back, &next}
 };
-
 /*********************************************************************/
-menu_s main_menu = {
-    "MAIN",
-    5,
-    {"LED",      "USB",      "ADC",      "AUDIO",      "SETTINGS"},
-    {&led_menu,  &usb_menu,  &adc_menu,  &audio_menu,  &setting_menu},
-    {Go_menu,    Go_menu,    Go_menu,    Go_menu,      Go_menu},
-    No_op,
-    No_op,
-    DISABLE,
-    {&sel_item, &prev, &next}
-};
 
 /*
  * *********************************************************************
  * Menu function
  * *********************************************************************
  */
-void Main_menu() {
+inline void Main_menu() {
   Enter_menu(&main_menu);
 }
 
-void Back_menu() {
-  //Enter_menu(active_menu->prev_menu);
-  //brk_flag = 1;
-  //RESET_ENC;
-  active_menu->DeInit();
-  Enter_menu(prev_menu);
+inline void Back_menu() {
+  if(active_menu) {
+    active_menu->DeInit();
+    Enter_menu(active_menu->prev_menu);
+  }
+  else
+    Enter_menu(prev_menu);
 }
 
 void Sel_item() {
-  active_menu->action[cur_pos]();//run menu item function
+  if(active_menu->action[cur_pos] != Go_menu) {
+    prev_menu = active_menu;
+    p_func temp = active_menu->action[cur_pos];
+    active_menu = (menu_s*){0};
+    temp();
+  }
+  else
+    active_menu->action[cur_pos]();//run menu item function
 }
 
-void No_op() {
+inline void No_op() {
 }
 
-void Go_menu() {
+inline void Go_menu() {
   Enter_menu(active_menu->next_menu[cur_pos]);//enter next menu
 }
 
-void Next_item() {
+inline void Next_item() {
   INCR_ENC(1);
 }
 
-void Prev_item() {
+inline void Prev_item() {
   DECR_ENC(1);
 }
 
-void Enter_menu(menu_s *menu) {
+void Enter_menu(menu_s* menu) {
   RESET_ENC;//reset encoder counter
   while(1) {
   if(active_menu != menu) {
-      prev_menu = active_menu;//set pointer to previous menu
       active_menu = menu;//set current menu
   //set buttons parameters
   Button_Set(user_button, active_menu->butt[user_button]);
@@ -245,15 +265,12 @@ void Enter_menu(menu_s *menu) {
     PCF8812_Time(view_all, 0);//view time in top of display
   else
     PCF8812_Title(active_menu->name);//else view menu name
-//  PCF8812_Button(active_menu->butt[0]->name, active_menu->butt[1]->name, \
-             active_menu->butt[2]->name);//view buttons names
   for(uint8_t i = 0; i < active_menu->num; i++)
     PCF8812_Option(active_menu->option[i], i + 1);//view menu items
   cur_pos = Get_Enc_Count(active_menu->num - 1);//get cursor position number
   PCF8812_Cursor(cur_pos + 1);//view cursor
   Buttons_Executor();
   PCF8812_DELAY;
-  BREAK_OUT;//exit loop if set break flag
   }
 }
 /*
