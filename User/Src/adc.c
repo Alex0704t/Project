@@ -108,7 +108,7 @@ void Read_Voltage(void) {
       Button_Set_Name(user_button, "OK");
       value = Read_ADC1();
       value = value*U_3V/4095;
-      //USB_Send_Int(value);
+      USB_Send_Int(value);
       //Logview_Send(value);
       //LCD_Value("Vdc", value, "mV", 2);
       PCF8812_Float_Value("Vdc ", value/1000.0, "V", 2);

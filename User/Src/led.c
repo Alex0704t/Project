@@ -35,7 +35,7 @@ void Led_Set(uint8_t led, uint8_t value)
   }
 }
 
-void Led_Brightness(uint8_t led, uint8_t *name) {
+void Led_Brightness(uint8_t led, char* name) {
   static uint8_t bright = 0;
   RESET_BLINK(led);
   RESET_ENC;
@@ -131,7 +131,7 @@ void Led_Blink(uint8_t led, uint16_t on_time, uint16_t off_time)
       }
 }
 
-void Set_Blink(uint8_t led, uint8_t *name)
+void Set_Blink(uint8_t led, char* name)
 {
   uint16_t on_time = 0, off_time = 0;
   RESET_ENC;

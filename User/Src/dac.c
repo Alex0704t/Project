@@ -7,6 +7,8 @@
 
 #include "dac.h"
 
+static uint8_t i = 0;
+
 void DAC1_Init()
 {
   RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;//GPIOA clock enable

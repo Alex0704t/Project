@@ -42,7 +42,7 @@
 #endif
 
 #ifndef MAX(a, b)
-#define MAX(a,b)       (a < b) ? (b) : a
+#define MAX(a, b)       (a < b) ? (b) : a
 #endif
 
 #ifndef USE_FULL_ASSERT

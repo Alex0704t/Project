@@ -103,7 +103,7 @@ void USB_Echo(){
 * @param  data: int number.
 * @retval none:
 */
-void USB_Send_int(int32_t value) {
+void USB_Send_Int(int32_t value) {
   char buffer[HID_IN_PACKET] = {0};
   snprintf(buffer, HID_IN_PACKET, "%ld\n", value);
   Write_to_USB(buffer);
@@ -118,13 +118,15 @@ void USB_Send_int(int32_t value) {
 void USB_Count(uint32_t period_ms) {
   Button_Set_Name(user_button, "EXIT");
   Button_Set_Name(button_2, "CLEAR");
-  uint8_t i = 0, run_flag = 0;
+  uint32_t i = 0;
+  uint8_t run_flag = 0;
   while(1) {
     PCF8812_Clear();
     PCF8812_Title("USB COUNT");
     PCF8812_UValue("", i, "", 4);
     if(Button_Get(user_button))
-      return;
+      Back_menu();
+//      return;
     if(Button_Get(button_1))
       run_flag ^= 1;
     if(Button_Get(button_2))
@@ -134,7 +136,7 @@ void USB_Count(uint32_t period_ms) {
     else {
       Button_Set_Name(button_1, "STOP");
       if(Check_delay_ms(period_ms)) {
-        USB_Send_int(i);
+        USB_Send_Int(i);
         i++;
       }
     }

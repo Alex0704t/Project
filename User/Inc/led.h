@@ -95,12 +95,12 @@ enum {led_all,
 #define LED_ALL_TOGGLE() 		GPIOD->ODR ^= 0xF000
 
 void Led_Init(void);
-void Led_Brightness(uint8_t led, uint8_t *name);
+void Led_Brightness(uint8_t led, char* name);
 void Led_Set(uint8_t led, uint8_t value);
 void Led_Toggle(uint8_t led);
 void Systick_Blink(void);
 void Led_Blink(uint8_t led, uint16_t on_time, uint16_t off_time);
-void Set_Blink(uint8_t led, uint8_t *name);
+void Set_Blink(uint8_t led, char* name);
 
 
 

@@ -123,6 +123,7 @@ void Button_Handle(uint8_t button) {
 
 void Button_Execute(uint8_t button) {
 //execute short press action
+   //PCF8812_Butt_name(button, butt[button].name);
    if(butt[button].state == button_pressed) {
        butt[button].state = button_released;
        butt[button].press_act();

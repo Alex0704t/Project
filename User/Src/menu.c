@@ -15,7 +15,8 @@
 static int8_t cur_pos = 0;
 uint8_t brk_flag = 0;
 uint8_t nxt_flag = 0;
-menu_s *active_menu;
+menu_s* active_menu;
+menu_s* prev_menu;
 /*
  * *********************************************************************
  * Button variables
@@ -199,9 +200,10 @@ void Main_menu() {
 
 void Back_menu() {
   //Enter_menu(active_menu->prev_menu);
-  brk_flag = 1;
+  //brk_flag = 1;
   //RESET_ENC;
   active_menu->DeInit();
+  Enter_menu(prev_menu);
 }
 
 void Sel_item() {
@@ -227,6 +229,7 @@ void Enter_menu(menu_s *menu) {
   RESET_ENC;//reset encoder counter
   while(1) {
   if(active_menu != menu) {
+      prev_menu = active_menu;//set pointer to previous menu
       active_menu = menu;//set current menu
   //set buttons parameters
   Button_Set(user_button, active_menu->butt[user_button]);
@@ -243,7 +246,7 @@ void Enter_menu(menu_s *menu) {
   else
     PCF8812_Title(active_menu->name);//else view menu name
 //  PCF8812_Button(active_menu->butt[0]->name, active_menu->butt[1]->name, \
-//             active_menu->butt[2]->name);//view buttons names
+             active_menu->butt[2]->name);//view buttons names
   for(uint8_t i = 0; i < active_menu->num; i++)
     PCF8812_Option(active_menu->option[i], i + 1);//view menu items
   cur_pos = Get_Enc_Count(active_menu->num - 1);//get cursor position number
