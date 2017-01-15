@@ -46,12 +46,6 @@ void Tim4_DeInit(void)
   RCC->APB1ENR &= ~RCC_APB1ENR_TIM4EN;//Tim4 clock disabled
 }
 
-void TIM4_IRQHandler(void) {
-	if(TIM4->SR & TIM_SR_UIF)	{
-	TIM4->SR &= ~TIM_SR_UIF;//clear update interrupt flag
-	}
-}
-
 void Tim3_Init(void)
 {
 	RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;//Tim3 clock enabled 84 MHz
@@ -74,11 +68,6 @@ void Tim3_Enc_Init(void)
 	TIM3->CCER &= ~(TIM_CCER_CC1P|TIM_CCER_CC2P);//active high level TI1, TI2
 }
 
-void TIM3_IRQHandler(void) {
-	if(TIM3->SR & TIM_SR_UIF)	{
-	TIM3->SR &= ~TIM_SR_UIF;//clear update interrupt flag
-	}
-}
 
 void Tim6_Init(uint16_t frequency)
 {
@@ -116,13 +105,6 @@ void Tim6_Set(uint16_t frequency)
   TIM6->ARR = APB1_FREQ/(SINE_RES * TIM6_PSC * frequency);;//auto-reload value
 }
 
-void TIM6_DAC_IRQHandler(void)
-{
-  TIM6->SR = 0;
-#ifndef USE_DAC1_DMA
-  DAC1_Handler();
-#endif
-}
 
 void Tim5_Init(uint8_t frequency)
 {
@@ -139,13 +121,4 @@ void Tim5_Init(uint8_t frequency)
   NVIC_EnableIRQ(TIM5_IRQn);
 
   TIM5->CR1 |= TIM_CR1_CEN;//TIM5 enabled
-}
-
-void TIM5_IRQHandler() {
-  if(TIM5->SR & TIM_SR_UIF) {
-    TIM5->SR &= ~TIM_SR_UIF;//clear update interrupt flag
-    Button_Handler();
-    PCF8812_Handler();
-    PCF8812_Count();
-    }
 }

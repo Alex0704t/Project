@@ -42,13 +42,6 @@ void SPI1_Init(void)
 	NVIC_EnableIRQ(SPI1_IRQn);//IRQ handler
 }
 
-void SPI1_IRQHandler(void)
-{
-	if(SPI1->SR & SPI_SR_TXE)
-	{
-
-	}
-}
 
 void SPI1_DMA_Init(void)
 {
@@ -81,27 +74,6 @@ void SPI1_DMA_Init(void)
 	NVIC_EnableIRQ(DMA2_Stream3_IRQn);//IRQ handler
 	NVIC_SetPriority(DMA2_Stream0_IRQn, 4);
 	NVIC_EnableIRQ(DMA2_Stream0_IRQn);//IRQ handler
-}
-
-void DMA2_Stream3_IRQHandler(void)
-{
-	if(DMA2->LISR & DMA_LISR_TCIF3)//check transfer complete
-	{
-		DMA2->LIFCR |= DMA_LIFCR_CTCIF3;//clear interrupt flag
-		DMA2_Stream3->CR &= ~DMA_SxCR_EN;//stream disable
-		DMA2_Stream3->CR &= ~DMA_SxCR_TCIE;//transfer complete interrupt disable
-	}
-}
-
-void DMA2_Stream0_IRQHandler(void)
-{
-	if(DMA2->LISR & DMA_LISR_TCIF0)//check transfer complete
-	{
-		DMA2->LIFCR |= DMA_LIFCR_CTCIF0;//clear interrupt flag
-		DMA2_Stream0->CR &= ~DMA_SxCR_EN;//stream disable
-		DMA2_Stream0->CR &= ~DMA_SxCR_TCIE;//transfer complete interrupt disable
-		CS_OFF();
-	}
 }
 
 void GetAxData(void)
@@ -154,13 +126,6 @@ void SPI2_Init(void)
 	NVIC_EnableIRQ(SPI2_IRQn);//IRQ handler
 }
 
-void SPI2_IRQHandler(void)
-{
-	if(SPI2->SR & SPI_SR_TXE)
-	{
-
-	}
-}
 
 void Send_SPI2_byte(uint8_t data)
 {
@@ -215,18 +180,6 @@ void SPI2_DMA_Init(void)
 }
 
 
-void DMA1_Stream4_IRQHandler(void)
-{
-	if(DMA1->HISR & DMA_HISR_TCIF4)//check transfer complete
-	{
-	  DMA1->HIFCR |= DMA_HIFCR_CTCIF4;//clear interrupt flag
-		//DMA1_Stream4->CR &= ~DMA_SxCR_TCIE;//transfer complete interrupt disable
-		while(!(SPI2->SR & SPI_SR_TXE));
-		while((SPI2->SR & SPI_SR_BSY));
-		DMA1_Stream4->CR &= ~DMA_SxCR_EN;//stream disable
-		PCF8812_buff_state = PCF8812_FLUSHED;
-	}
-}
 
 
 void Send_SPI2_DMA(uint8_t* data, uint16_t length)

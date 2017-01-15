@@ -282,16 +282,6 @@ static void Audio_MAL_PauseResume(uint32_t Cmd, uint32_t Addr)
 }
 
 
-//--------------------------------------------------------------
-void DMA1_Stream7_IRQHandler(void)
-{
-#ifdef USE_MP3
-  EVAL_AUDIO_TransferComplete_CallBack();
-#else
-  BeepHandler();
-#endif
-}
-
 void Audio_Reset_Init()
   {
   /*
@@ -309,7 +299,7 @@ void Audio_Reset_Init()
 void Get_Audiochip_ID(void)
 {
   uint8_t data = Codec_ReadRegister(CHIP_ID_R);
-  uint8_t str1[PCF8812_LCD_LINE], str2[PCF8812_LCD_LINE];
+  char str1[PCF8812_LCD_LINE], str2[PCF8812_LCD_LINE];
   PCF8812_Clear();
   if((data & 0xF0) == CS43L22_ID)
   {
@@ -408,7 +398,7 @@ void BeepHandler()
 void AnalogWave_Init(uint16_t frequency, uint8_t volume)
 {
   EVAL_AUDIO_Init(volume);
-  EVAL_SET_DMA(1, (uint16_t *)0x00);//send "dummy" byte
+  EVAL_SET_DMA(1, (int16_t *)0x00);//send "dummy" byte
   EVAL_AUDIO_Play();
 
   //DAC1_Init();

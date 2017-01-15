@@ -116,7 +116,9 @@ void USB_Send_Int(int32_t value) {
 * @retval none:
 */
 void USB_Count(uint32_t period_ms) {
-  Button_Set_Name(user_button, "EXIT");
+//  Button_Set_Name(user_button, "EXIT");
+  button_s temp = {.enable = SET, .name = "EXIT", .press_act = Back_menu};
+  Button_Set(user_button, &temp);
   Button_Set_Name(button_2, "CLEAR");
   uint32_t i = 0;
   uint8_t run_flag = 0;
@@ -124,8 +126,8 @@ void USB_Count(uint32_t period_ms) {
     PCF8812_Clear();
     PCF8812_Title("USB COUNT");
     PCF8812_UValue("", i, "", 4);
-    if(Button_Get(user_button))
-      Back_menu();
+//    if(Button_Get(user_button))
+//      Back_menu();
 //      return;
     if(Button_Get(button_1))
       run_flag ^= 1;
@@ -139,6 +141,7 @@ void USB_Count(uint32_t period_ms) {
         USB_Send_Int(i);
         i++;
       }
+    Buttons_Executor();
     }
     PCF8812_DELAY;
   }

@@ -50,18 +50,6 @@ uint8_t Button_Get(uint8_t button) {
   return temp;
 }
 
-void EXTI0_IRQHandler(void) {
-	if((EXTI->PR & EXTI_PR_PR0) == EXTI_PR_PR0) {
-      EXTI->PR |= EXTI_PR_PR0;//clear pending bit of set 1
-
-    }
-}
-
-void EXTI9_5_IRQHandler(void) {
-  if((EXTI->PR & EXTI_PR_PR8) == EXTI_PR_PR8) {
-      EXTI->PR |= EXTI_PR_PR8;//clear pending bit of set 1
-    }
-  }
 
 
 void Button_Handler() {

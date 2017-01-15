@@ -183,3 +183,200 @@ void OTG_FS_IRQHandler(void)
 
 
 
+void EXTI1_IRQHandler(void)
+{
+  if(EXTI->PR & EXTI_PR_PR1)
+    {
+      EXTI->PR |= EXTI_PR_PR1;//clear pending bit of set 1
+      //GetAxData();
+      //Dir_Led();
+
+    }
+}
+
+void ADC_IRQHandler(void) {
+  if(ADC1->SR & ADC_SR_AWD) {
+  ADC1->SR &= ~ADC_SR_AWD;//clear AWD flag
+  }
+}
+
+void EXTI0_IRQHandler(void) {
+  if((EXTI->PR & EXTI_PR_PR0) == EXTI_PR_PR0) {
+      EXTI->PR |= EXTI_PR_PR0;//clear pending bit of set 1
+
+    }
+}
+
+void EXTI9_5_IRQHandler(void) {
+  if((EXTI->PR & EXTI_PR_PR8) == EXTI_PR_PR8) {
+      EXTI->PR |= EXTI_PR_PR8;//clear pending bit of set 1
+    }
+  }
+
+void DMA1_Stream7_IRQHandler(void)
+{
+#ifdef USE_MP3
+  EVAL_AUDIO_TransferComplete_CallBack();
+#else
+  BeepHandler();
+#endif
+}
+
+void SPI1_IRQHandler(void)
+{
+  if(SPI1->SR & SPI_SR_TXE)
+  {
+
+  }
+}
+
+void DMA2_Stream3_IRQHandler(void)
+{
+  if(DMA2->LISR & DMA_LISR_TCIF3)//check transfer complete
+  {
+    DMA2->LIFCR |= DMA_LIFCR_CTCIF3;//clear interrupt flag
+    DMA2_Stream3->CR &= ~DMA_SxCR_EN;//stream disable
+    DMA2_Stream3->CR &= ~DMA_SxCR_TCIE;//transfer complete interrupt disable
+  }
+}
+
+void DMA2_Stream0_IRQHandler(void)
+{
+  if(DMA2->LISR & DMA_LISR_TCIF0)//check transfer complete
+  {
+    DMA2->LIFCR |= DMA_LIFCR_CTCIF0;//clear interrupt flag
+    DMA2_Stream0->CR &= ~DMA_SxCR_EN;//stream disable
+    DMA2_Stream0->CR &= ~DMA_SxCR_TCIE;//transfer complete interrupt disable
+    CS_OFF();
+  }
+}
+
+void SPI2_IRQHandler(void)
+{
+  if(SPI2->SR & SPI_SR_TXE)
+  {
+
+  }
+}
+
+void DMA1_Stream4_IRQHandler(void)
+{
+  if(DMA1->HISR & DMA_HISR_TCIF4)//check transfer complete
+  {
+    DMA1->HIFCR |= DMA_HIFCR_CTCIF4;//clear interrupt flag
+    //DMA1_Stream4->CR &= ~DMA_SxCR_TCIE;//transfer complete interrupt disable
+    while(!(SPI2->SR & SPI_SR_TXE));
+    while((SPI2->SR & SPI_SR_BSY));
+    DMA1_Stream4->CR &= ~DMA_SxCR_EN;//stream disable
+    PCF8812_buff_state = PCF8812_FLUSHED;
+  }
+}
+
+void TIM4_IRQHandler(void) {
+  if(TIM4->SR & TIM_SR_UIF) {
+  TIM4->SR &= ~TIM_SR_UIF;//clear update interrupt flag
+  }
+}
+
+void TIM3_IRQHandler(void) {
+  if(TIM3->SR & TIM_SR_UIF) {
+  TIM3->SR &= ~TIM_SR_UIF;//clear update interrupt flag
+  }
+}
+
+void TIM5_IRQHandler() {
+  if(TIM5->SR & TIM_SR_UIF) {
+    TIM5->SR &= ~TIM_SR_UIF;//clear update interrupt flag
+    Button_Handler();
+    PCF8812_Handler();
+    PCF8812_Count();
+    }
+}
+
+void TIM6_DAC_IRQHandler(void)
+{
+  TIM6->SR = 0;
+#ifndef USE_DAC1_DMA
+  DAC1_Handler();
+#endif
+}
+
+extern uint8_t *tx_uart1_ptr;
+extern uint8_t *rx_uart1_ptr;
+extern uint8_t *tx_uart2_ptr;
+extern uint8_t *rx_uart2_ptr;
+
+extern uint8_t tx_uart1_count;
+extern uint8_t rx_uart1_count;
+extern uint8_t tx_uart2_count;
+extern uint8_t rx_uart2_count;
+
+void USART1_IRQHandler(void)
+{
+  if(USART1->SR & USART_SR_TXE)
+  {
+  USART1->DR = *tx_uart1_ptr++;
+  if(--tx_uart1_count == 0)
+    USART1->CR1 &= ~USART_CR1_TXEIE;
+  }
+
+  if(USART1->SR & USART_SR_RXNE)
+  {
+  *rx_uart1_ptr++ = USART1->DR;
+  if(--rx_uart1_count == 0)
+    USART1->CR1 &= ~USART_CR1_RXNEIE;
+  }
+}
+
+void USART2_IRQHandler(void)
+{
+  if(USART2->SR & USART_SR_TXE)
+  {
+  USART2->DR = *tx_uart2_ptr++;
+  if(--tx_uart2_count == 0)
+    USART2->CR1 &= ~USART_CR1_TXEIE;
+  }
+
+  if(USART2->SR & USART_SR_RXNE)
+  {
+  *rx_uart2_ptr++ = USART2->DR;
+  if(--rx_uart2_count == 0)
+    USART2->CR1 &= ~USART_CR1_RXNEIE;
+  }
+ }
+
+void DMA2_Stream7_IRQHandler(void)
+{
+  if(DMA2->HISR & DMA_HISR_TCIF7)//transfer complete
+  {
+    DMA2->HIFCR |= DMA_HIFCR_CTCIF7;//clear interrupt flag
+    DMA2_Stream7->CR &= ~DMA_SxCR_EN;//stream disable
+  }
+}
+
+void DMA1_Stream6_IRQHandler(void)
+{
+  if(DMA1->HISR & DMA_HISR_TCIF6)//transfer complete
+  {
+    DMA1->HIFCR |= DMA_HIFCR_CTCIF6;//clear interrupt flag
+    DMA1_Stream6->CR &= ~DMA_SxCR_EN;//stream disable
+  }
+}
+
+void DMA2_Stream2_IRQHandler(void)
+{
+  if(DMA2->LISR & DMA_LISR_TCIF2)//transfer complete
+  {
+    DMA2->LIFCR |= DMA_LIFCR_CTCIF2;//clear interrupt flag
+    DMA2_Stream2->CR &= ~DMA_SxCR_EN;//stream disable
+  }
+}
+
+void DMA1_Stream5_IRQHandler(void)
+{
+  if(DMA1->HISR & DMA_HISR_TCIF5)//transfer complete
+  {
+    DMA1->HIFCR |= DMA_HIFCR_CTCIF5;//clear interrupt flag
+    DMA1_Stream5->CR &= ~DMA_SxCR_EN;//stream disable
+  }
+}

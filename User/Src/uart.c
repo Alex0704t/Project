@@ -168,40 +168,6 @@ void ReceiveDataIT2(uint8_t *data, uint8_t size)
 	USART2->CR1 |= USART_CR1_RXNEIE;
 }
 
-void USART1_IRQHandler(void)
-{
-	if(USART1->SR & USART_SR_TXE)
-	{
-	USART1->DR = *tx_uart1_ptr++;
-	if(--tx_uart1_count == 0)
-		USART1->CR1 &= ~USART_CR1_TXEIE;
-	}
-
-	if(USART1->SR & USART_SR_RXNE)
-	{
-	*rx_uart1_ptr++ = USART1->DR;
-	if(--rx_uart1_count == 0)
-		USART1->CR1 &= ~USART_CR1_RXNEIE;
-	}
-}
-
-void USART2_IRQHandler(void)
-{
-	if(USART2->SR & USART_SR_TXE)
-	{
-	USART2->DR = *tx_uart2_ptr++;
-	if(--tx_uart2_count == 0)
-		USART2->CR1 &= ~USART_CR1_TXEIE;
-	}
-
-	if(USART2->SR & USART_SR_RXNE)
-	{
-	*rx_uart2_ptr++ = USART2->DR;
-	if(--rx_uart2_count == 0)
-		USART2->CR1 &= ~USART_CR1_RXNEIE;
-	}
- }
-
 void DMA_USART1_Tx_Init(void)
 {
 	/*USART1 TX DMA2 Stream7 channel4*/
@@ -225,15 +191,6 @@ void SendData1DMA(uint8_t *data, uint8_t size)
 	DMA2_Stream7->M0AR = (uint32_t)(data);//memory address
 	DMA2_Stream7->NDTR = size;//data size
 	DMA2_Stream7->CR |= DMA_SxCR_EN;//stream enable
-}
-
-void DMA2_Stream7_IRQHandler(void)
-{
-	if(DMA2->HISR & DMA_HISR_TCIF7)//transfer complete
-	{
-		DMA2->HIFCR |= DMA_HIFCR_CTCIF7;//clear interrupt flag
-		DMA2_Stream7->CR &= ~DMA_SxCR_EN;//stream disable
-	}
 }
 
 void DMA_USART2_Tx_Init(void)
@@ -261,15 +218,6 @@ void SendData2DMA(uint8_t *data, uint8_t size)
 	DMA1_Stream6->CR |= DMA_SxCR_EN;//stream enable
 }
 
-void DMA1_Stream6_IRQHandler(void)
-{
-	if(DMA1->HISR & DMA_HISR_TCIF6)//transfer complete
-	{
-		DMA1->HIFCR |= DMA_HIFCR_CTCIF6;//clear interrupt flag
-		DMA1_Stream6->CR &= ~DMA_SxCR_EN;//stream disable
-	}
-}
-
 void DMA_USART1_Rx_Init(void)
 {
 	/*USART1 RX DMA2 Stream2 channel4*/
@@ -295,14 +243,6 @@ void ReceiveData1DMA(uint8_t *data, uint8_t size)
 	DMA2_Stream2->CR |= DMA_SxCR_EN;//stream enable
 }
 
-void DMA2_Stream2_IRQHandler(void)
-{
-	if(DMA2->LISR & DMA_LISR_TCIF2)//transfer complete
-	{
-		DMA2->LIFCR |= DMA_LIFCR_CTCIF2;//clear interrupt flag
-		DMA2_Stream2->CR &= ~DMA_SxCR_EN;//stream disable
-	}
-}
 
 void DMA_USART2_Rx_Init(void)
 {
@@ -329,11 +269,3 @@ void ReceiveData2DMA(uint8_t *data, uint8_t size)
 	DMA1_Stream5->CR |= DMA_SxCR_EN;//stream enable
 }
 
-void DMA1_Stream5_IRQHandler(void)
-{
-	if(DMA1->HISR & DMA_HISR_TCIF5)//transfer complete
-	{
-		DMA1->HIFCR |= DMA_HIFCR_CTCIF5;//clear interrupt flag
-		DMA1_Stream5->CR &= ~DMA_SxCR_EN;//stream disable
-	}
-}

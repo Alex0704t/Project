@@ -77,11 +77,6 @@ uint16_t Read_ADC1(void)
 	return ADC1->DR;
 }
 
-void ADC_IRQHandler(void) {
-	if(ADC1->SR & ADC_SR_AWD)	{
-	ADC1->SR &= ~ADC_SR_AWD;//clear AWD flag
-	}
-}
 
 void Read_Temp(void) {
   uint16_t value;
