@@ -85,14 +85,14 @@ void USB_Echo(){
   while(1) {
     PCF8812_Clear();
     PCF8812_Title("USB ECHO");
-    Button_Set_Name(user_button, "OK");
-    if(Button_Get(user_button))
-      break;
+    button_s temp = {.enable = SET, .name = "EXIT", .press_act = Back_menu};
+    Button_Set(user_button, &temp);
     if(Read_from_USB(buffer)) {
       Write_to_USB(buffer);
       strncpy(str, buffer, PCF8812_STR_SIZ);
     }
     PCF8812_Putline_Centre(str, 4);
+    Buttons_Executor();
     PCF8812_DELAY;
     ClearBuf(buffer, HID_IN_PACKET);
   }
@@ -116,7 +116,6 @@ void USB_Send_Int(int32_t value) {
 * @retval none:
 */
 void USB_Count(uint32_t period_ms) {
-//  Button_Set_Name(user_button, "EXIT");
   button_s temp = {.enable = SET, .name = "EXIT", .press_act = Back_menu};
   Button_Set(user_button, &temp);
   Button_Set_Name(button_2, "CLEAR");
@@ -126,9 +125,6 @@ void USB_Count(uint32_t period_ms) {
     PCF8812_Clear();
     PCF8812_Title("USB COUNT");
     PCF8812_UValue("", i, "", 4);
-//    if(Button_Get(user_button))
-//      Back_menu();
-//      return;
     if(Button_Get(button_1))
       run_flag ^= 1;
     if(Button_Get(button_2))
@@ -144,5 +140,43 @@ void USB_Count(uint32_t period_ms) {
     Buttons_Executor();
     }
     PCF8812_DELAY;
+  }
+}
+
+/**
+* @brief  This Function receive & execute command.
+* @param  none:
+* @retval none:
+*/
+void USB_Ctrl(){
+  char buffer[HID_IN_PACKET] = {0};
+  char str[PCF8812_STR_SIZ] = "";
+  uint8_t no_resp = 0;
+  char* msg = "No response:";
+  button_s temp = {.enable = SET, .name = "EXIT", .press_act = Back_menu};
+  Button_Set(user_button, &temp);
+  while(1) {
+    PCF8812_Clear();
+    PCF8812_Title("USB CONTROL");
+    if(Read_from_USB(buffer)) {
+      strncpy(str, buffer, PCF8812_STR_SIZ);
+      no_resp = 0;
+      if(!strncmp(buffer, "green", 5) || !strncmp(buffer, "GREEN", 5))
+        LED_TOGGLE(green);
+      else if(!strncmp(buffer, "blue", 4) || !strncmp(buffer, "BLUE", 4))
+        LED_TOGGLE(blue);
+      else if(!strncmp(buffer, "red", 3) || !strncmp(buffer, "RED", 3))
+        LED_TOGGLE(red);
+      else if(!strncmp(buffer, "orange", 6) || !strncmp(buffer, "ORANGE", 6))
+        LED_TOGGLE(blue);
+      else
+        no_resp = 1;
+    }
+    if(no_resp)
+      PCF8812_Putline_Centre(msg, 3);
+    PCF8812_Putline_Centre(str, 4);
+    Buttons_Executor();
+    PCF8812_DELAY;
+    ClearBuf(buffer, HID_IN_PACKET);
   }
 }

@@ -45,8 +45,8 @@ int main(void)
 //    USB_HID_SendReport("HI\n", 64);
 //	  USB_Echo();
 //	  USB_Count(1000);
-	  Main_menu();
-
+//	  Main_menu();
+	  USB_Ctrl();
   }
 }
 
