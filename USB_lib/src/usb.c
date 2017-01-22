@@ -82,17 +82,17 @@ uint8_t Read_from_USB(char* data){
 void USB_Echo(){
   char buffer[HID_IN_PACKET] = {0};
   char str[PCF8812_STR_SIZ] = "";
+  Button_Set_Name(user_button, "EXIT");
   while(1) {
     PCF8812_Clear();
     PCF8812_Title("USB ECHO");
-    button_s temp = {.enable = SET, .name = "EXIT", .press_act = Back_menu};
-    Button_Set(user_button, &temp);
     if(Read_from_USB(buffer)) {
       Write_to_USB(buffer);
       strncpy(str, buffer, PCF8812_STR_SIZ);
     }
-    PCF8812_Putline_Centre(str, 4);
-    Buttons_Executor();
+    PCF8812_Putline_Center(str, 4);
+    if(Button_Get(user_button))
+      return;
     PCF8812_DELAY;
     ClearBuf(buffer, HID_IN_PACKET);
   }
@@ -116,29 +116,30 @@ void USB_Send_Int(int32_t value) {
 * @retval none:
 */
 void USB_Count(uint32_t period_ms) {
-  button_s temp = {.enable = SET, .name = "EXIT", .press_act = Back_menu};
-  Button_Set(user_button, &temp);
+  Button_Set_Name(user_button, "EXIT");
   Button_Set_Name(button_2, "CLEAR");
   uint32_t i = 0;
   uint8_t run_flag = 0;
+  Button_Set_Name(button_1, "START");
   while(1) {
     PCF8812_Clear();
     PCF8812_Title("USB COUNT");
     PCF8812_UValue("", i, "", 4);
-    if(Button_Get(button_1))
+    if(Button_Get(user_button))
+      return;
+    if(Button_Get(button_1)) {
       run_flag ^= 1;
+      if(!run_flag)
+        Button_Set_Name(button_1, "START");
+      else
+        Button_Set_Name(button_1, "STOP");
+    }
     if(Button_Get(button_2))
       i = 0;
-    if(!run_flag)
-      Button_Set_Name(button_1, "START");
-    else {
-      Button_Set_Name(button_1, "STOP");
-      if(Check_delay_ms(period_ms)) {
-        USB_Send_Int(i);
-        i++;
+    if(run_flag && Check_delay_ms(period_ms)) {
+      USB_Send_Int(i);
+      i++;
       }
-    Buttons_Executor();
-    }
     PCF8812_DELAY;
   }
 }
@@ -149,12 +150,11 @@ void USB_Count(uint32_t period_ms) {
 * @retval none:
 */
 void USB_Ctrl(){
-  char buffer[HID_IN_PACKET] = {0};
+  char buffer[HID_IN_PACKET] = "";
   char str[PCF8812_STR_SIZ] = "";
   uint8_t no_resp = 0;
   char* msg = "No response:";
-  button_s temp = {.enable = SET, .name = "EXIT", .press_act = Back_menu};
-  Button_Set(user_button, &temp);
+  Button_Set_Name(user_button, "EXIT");
   while(1) {
     PCF8812_Clear();
     PCF8812_Title("USB CONTROL");
@@ -173,9 +173,10 @@ void USB_Ctrl(){
         no_resp = 1;
     }
     if(no_resp)
-      PCF8812_Putline_Centre(msg, 3);
-    PCF8812_Putline_Centre(str, 4);
-    Buttons_Executor();
+      PCF8812_Putline_Center(msg, 3);
+    PCF8812_Putline_Center(str, 4);
+    if(Button_Get(user_button))
+      return;
     PCF8812_DELAY;
     ClearBuf(buffer, HID_IN_PACKET);
   }

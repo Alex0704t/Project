@@ -10,6 +10,7 @@
 
 //#include "../Device/stm32f407xx.h"
 #include "user.h"
+#include "menu.h"
 
 #define U_3V 2940
 

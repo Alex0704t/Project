@@ -46,11 +46,26 @@ void Button_Int_Init(void) {
 
 uint8_t Button_Get(uint8_t button) {
   uint8_t temp = butt[button].state;
+  if(temp) LED_TOGGLE(button+1);
   butt[button].state = button_released;
   return temp;
 }
 
+void Button_Clear(uint8_t button) {
+  butt[button].enable = RESET;
+  strncpy(butt[button].name, "     ", BUTTON_NAME_SIZE);
+  butt[button].press_act = NULL;
+  butt[button].repeat_ms = 0;
+  butt[button].hold_act = NULL;
+  butt[button].count = 0;
+  butt[button].state = button_released;
+}
 
+void Buttons_Clear() {
+  Button_Clear(user_button);
+  Button_Clear(button_1);
+  Button_Clear(button_2);
+}
 
 void Button_Handler() {
   if(butt[user_button].enable)
@@ -87,8 +102,8 @@ void Button_Handle(uint8_t button) {
               butt[button].count++;
   //reset button state & set delay past holding button
           if(butt[button].state == button_hold) {
-              butt[button].state = button_released;
-              butt[button].count = PAST_HOLD_DELAY;
+            butt[button].state = button_released;
+            butt[button].count = PAST_HOLD_DELAY;
           }
   //filter contact bounce
           else if(butt[button].state != button_hold){
@@ -121,7 +136,7 @@ void Button_Execute(uint8_t button) {
        PCF8812_Butt_ind(button);
 //once execute
        if(!butt[button].repeat_ms) {
-           butt[button].hold_act();
+         butt[button].hold_act();
        }
 //repeat executing
        else {
@@ -129,8 +144,8 @@ void Button_Execute(uint8_t button) {
            if(!start)
              start = Get_Tick();
            if((Get_Tick() - start) >= butt[button].repeat_ms) {
-               butt[button].hold_act();
-               start = Get_Tick();
+             butt[button].hold_act();
+             start = Get_Tick();
            }
        }
     }
@@ -149,24 +164,30 @@ void Buttons_Executor() {
 }
 
 void Button_Set(uint8_t button, button_s *in) {
-  if(butt[button].enable != SET)
-    Button_Enable(button);
-  if(!in->hold_act) {
-     in->hold_act = in->press_act;
-     in->repeat_ms = 500;
-  }
-  butt[button] = *in;
-}
-
-inline void Button_Enable(uint8_t button) {
+  Button_Clear(button);
   Button_Init(button);
+  strncpy(butt[button].name, in->name, BUTTON_NAME_SIZE);
+//  butt[button].name = in->name;
+  butt[button].press_act = in->press_act;
+  if(!in->hold_act) {
+    butt[button].hold_act = in->press_act;
+    butt[button].repeat_ms = 500;
+  }
+  else {
+    butt[button].hold_act = in->hold_act;
+    butt[button].repeat_ms = in->repeat_ms;
+  }
+  butt[button].count = 0;
+  butt[button].state = button_released;
   butt[button].enable = SET;
 }
 
 void Button_Set_Name(uint8_t button, char* name) {
-  if(butt[button].enable != SET)
-    Button_Enable(button);
-  butt[button].name = name;
+  button_s temp = (button_s){0};
+  temp.press_act = NULL;
+  strncpy(temp.name, name, BUTTON_NAME_SIZE);
+  temp.enable = SET;
+  Button_Set(button, &temp);
 }
 
 uint8_t Check_Button(uint8_t button) {

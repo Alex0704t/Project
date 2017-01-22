@@ -125,10 +125,10 @@ menu_s led_all_menu = {
 /*********************************************************************/
 menu_s usb_menu = {
     "USB",
-    3,
-    {"ECHO",   "COUNT",    "BACK"},
-    {NULL,     NULL,       NULL},
-    {USB_Echo, Send_Count, Back_menu},
+    4,
+    {"ECHO",   "COUNT",    "CONTROL", "BACK"},
+    {NULL,     NULL,       NULL,      NULL},
+    {USB_Echo, Send_Count, USB_Ctrl,  Back_menu},
     &main_menu,
     No_op,
     No_op,
@@ -207,11 +207,13 @@ menu_s setting_menu = {
  * Menu function
  * *********************************************************************
  */
-inline void Main_menu() {
+void Main_menu() {
   Enter_menu(&main_menu);
 }
 
-inline void Back_menu() {
+void Back_menu() {
+//  Buttons_Clear();
+  LED_TOGGLE(red);
   if(active_menu) {
     active_menu->DeInit();
     Enter_menu(active_menu->prev_menu);
@@ -221,6 +223,7 @@ inline void Back_menu() {
 }
 
 void Sel_item() {
+ Buttons_Clear();
   if(active_menu->action[cur_pos] != Go_menu) {
     prev_menu = active_menu;
     p_func temp = active_menu->action[cur_pos];

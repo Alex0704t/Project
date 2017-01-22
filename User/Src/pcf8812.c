@@ -96,14 +96,14 @@ void PCF8812_Test(void) {
     PCF8812_buff[i + 15] = 0x80;
     }
   delay_ms(1000);
-  PCF8812_Putline_Centre("Hello, World!", 0);
-  PCF8812_Putline_Centre("Привет, Мир!", 1);
-  PCF8812_Putline_Centre("Привіт, Світ!", 2);
-  PCF8812_Putline_Centre("ARM Cortex M4", 3);
-  PCF8812_Putline_Centre("STM32F4Discovery", 4);
-  PCF8812_Putline_Centre("Aleksey Totkal", 5);
-  PCF8812_Putline_Centre("Алексей Тоткал", 6);
-  PCF8812_Putline_Centre("Олексій Тоткал", 7);
+  PCF8812_Putline_Center("Hello, World!", 0);
+  PCF8812_Putline_Center("Привет, Мир!", 1);
+  PCF8812_Putline_Center("Привіт, Світ!", 2);
+  PCF8812_Putline_Center("ARM Cortex M4", 3);
+  PCF8812_Putline_Center("STM32F4Discovery", 4);
+  PCF8812_Putline_Center("Aleksey Totkal", 5);
+  PCF8812_Putline_Center("Алексей Тоткал", 6);
+  PCF8812_Putline_Center("Олексій Тоткал", 7);
   delay_ms(2000);
   PCF8812_Clear();
 }
@@ -215,7 +215,7 @@ void PCF8812_Message(char* s) {
 
 //View menu name in line 0
 void PCF8812_Title(char* s) {
-  PCF8812_Putline_Centre(s, 0);
+  PCF8812_Putline_Center(s, 0);
 }
 
 void PCF8812_Putline(char* s, uint8_t line) {
@@ -226,13 +226,13 @@ void PCF8812_Putline(char* s, uint8_t line) {
     PCF8812_Set_Char(str[i], line, i);
 }
 
-void PCF8812_Putline_Centre(char* s, uint8_t line) {
+void PCF8812_Putline_Center(char *s, uint8_t line) {
   uint8_t sp_num = PCF8812_LCD_LINE - strlen(s);//number of spaces
   char str[PCF8812_STR_SIZ] = "";
-  //insert string in centre of line
-  strncpy(str, EMPTY_STR, sp_num/2);
+  //insert string in center of line
+  strncpy(str, EMPTY_STR, sp_num / 2);
   strcat(str, s);
-  strncat(str, EMPTY_STR, sp_num/2 + sp_num%2);
+  strncat(str, EMPTY_STR, sp_num / 2 + sp_num % 2);
   PCF8812_Putline(str, line);
 }
 
@@ -250,7 +250,7 @@ void PCF8812_SValue(char* name, int32_t value, char* unit, uint8_t line) {
   //call snprintf for calculate wide for name
   uint8_t name_wide = PCF8812_LCD_LINE - snprintf(str, PCF8812_STR_SIZ, "% li%.3s", value, unit);
   snprintf(str, PCF8812_STR_SIZ, "%.*s% li%.3s", name_wide, name, value, unit);
-  PCF8812_Putline_Centre(str, line);
+  PCF8812_Putline_Center(str, line);
 }
 
 void PCF8812_UValue(char* name, uint32_t value, char* unit, uint8_t line) {
@@ -258,7 +258,7 @@ void PCF8812_UValue(char* name, uint32_t value, char* unit, uint8_t line) {
   //call snprintf for calculate wide for name
   uint8_t name_wide = PCF8812_LCD_LINE - snprintf(str, PCF8812_STR_SIZ, " %lu%.3s", value, unit);
   snprintf(str, PCF8812_STR_SIZ, "%.*s %lu%.3s", name_wide, name, value, unit);
-  PCF8812_Putline_Centre(str, line);
+  PCF8812_Putline_Center(str, line);
 }
 
 void PCF8812_Hex_Value(char* name, int32_t value, uint8_t line) {
@@ -266,7 +266,7 @@ void PCF8812_Hex_Value(char* name, int32_t value, uint8_t line) {
   //call snprintf for calculate wide for name
   uint8_t name_wide = PCF8812_LCD_LINE - snprintf(str, PCF8812_STR_SIZ, " %#lx", value);
   snprintf(str, PCF8812_STR_SIZ, "%.*s %#lx", name_wide, name, value);
-  PCF8812_Putline_Centre(str, line);
+  PCF8812_Putline_Center(str, line);
 }
 #ifdef USE_SPRINTF
 void PCF8812_Float_Value(char* name, double
@@ -282,7 +282,7 @@ void PCF8812_Float_Value(char* name, double
       float_prec = 8 - name_wide;//correct float precision
     }
   snprintf(str, PCF8812_STR_SIZ, "%.*s% .*g%.3s", name_wide, name, float_prec, value, unit);
-  PCF8812_Putline_Centre(str, line);
+  PCF8812_Putline_Center(str, line);
 }
 #else
 
@@ -303,7 +303,7 @@ void PCF8812_Float_Value(char* name, double value, char* unit, uint8_t line) {
   uint8_t name_wide = (name_len > 5) ? 5 : name_len;
   gcvt(value, prec, f_str);
   snprintf(str, PCF8812_STR_SIZ, "%.*s% s%.3s", name_wide, name, f_str, unit);
-  PCF8812_Putline_Centre(str, line);
+  PCF8812_Putline_Center(str, line);
 }
 #endif
 
@@ -316,7 +316,7 @@ void PCF8812_Percent(char* name, int8_t value, uint8_t line) {
       return;
     }
   snprintf(str, PCF8812_STR_SIZ, "%.13s %d%%", name, value);
-  PCF8812_Putline_Centre(str, line);
+  PCF8812_Putline_Center(str, line);
   column = value;
   PCF8812_Set_byte((line + 1), i++, 0x7F);
   while(i < 100)
@@ -375,7 +375,6 @@ void PCF8812_Point(uint8_t x, uint8_t y) {
 
 void PCF8812_Line(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2) {
   uint8_t x = 0, y = 0;
-  uint8_t temp = 0;
   uint8_t len_x = 0, len_y = 0;
   int8_t err = 0;
   int8_t ystep = 0;
@@ -441,9 +440,9 @@ void PCF8812_Triangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t x3
 }
 
 void PCF8812_Time(uint8_t view, uint8_t line) {
-  uint8_t str[PCF8812_STR_SIZ] = "";
+  char str[PCF8812_STR_SIZ] = "";
   Get_Time_String(NULL, str, view);
-  PCF8812_Putline_Centre(str, line);
+  PCF8812_Putline_Center(str, line);
 }
 
 void PCF8812_Option(char* option, uint8_t line) {
@@ -461,26 +460,24 @@ void PCF8812_Cursor(uint8_t line) {
 
 
 void PCF8812_Butt_name(uint8_t button, char* name) {
-  uint8_t len = 0, start = 0, end = 0;
+  uint8_t len = 0, start = 0;
   len = strlen(name);
+  len = (len > 5) ? 5 : len;
   switch(button)
   {
     case button_1:
       start = 0;
-      end = len;
       break;
     case user_button:
-      start = 6 + (5 - len) / 2;
-      end = start + len;
+      start = BUTTON_NAME_SIZE + 1 + (BUTTON_NAME_SIZE - len) / 2;
       break;
     case button_2:
-      start = 17 - len;
-      end = 17;
+      start = PCF8812_LCD_LINE - len;
       break;
     default:
       break;
   }
-  for(uint8_t i = start; i < end; i++)
+  for(uint8_t i = start; i < (start + len); i++)
       PCF8812_Set_Char(*name++, 7, i);
 }
 
@@ -582,7 +579,7 @@ uint32_t PCF8812_Set_Param(Par_list* list) {
         INCR_ENC(1);
       if(Button_Get(user_button))//return result
         return list->item[i].code;
-      PCF8812_Putline_Centre(list->item[i].name, 4);
+      PCF8812_Putline_Center(list->item[i].name, 4);
       PCF8812_DELAY;
     }
   return 0;
@@ -600,12 +597,12 @@ void PCF8812_Input_Time() {
   for(;;)
     {
     PCF8812_Clear();
-    PCF8812_Putline_Centre("SET DATE & TIME", 0);
+    PCF8812_Putline_Center("SET DATE & TIME", 0);
     Button_Set_Name(user_button, "OK");
     Button_Set_Name(button_1, " <");
     Button_Set_Name(button_2, "> ");
     Get_Time_String(&temp, str, view_all);
-    PCF8812_Putline_Centre(str, 3);
+    PCF8812_Putline_Center(str, 3);
     PCF8812_Putline("dd.mm.yy HH:MM:SS", 5);//view data & time format
     //view selected digit
     PCF8812_Set_Symb(corner_up, 2, col);

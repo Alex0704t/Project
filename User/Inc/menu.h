@@ -60,13 +60,13 @@ menu_s setting_menu;
 
 
 void Enter_menu(menu_s *menu);
-inline void Back_menu();
+void Back_menu();
 inline void No_op();
 inline void Go_menu();
 void Sel_item();
 inline void Next_item();
 inline void Prev_item();
-inline void Main_menu();
+void Main_menu();
 /*********************************************************************/
 void LED0_Toggle(void);
 void LED1_Toggle(void);

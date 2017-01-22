@@ -24,29 +24,13 @@ int main(void)
 
   while (1)
   {
-//	  delay_ms(1000);
-//	  uint8_t len = Read_from_USB(&Buffer);
-//	  if (/*Out*/Buffer[0]&1)  	LED_ON(orange);
-//		  	  else			LED_OFF(orange);
-//	  if (/*Out*/Buffer[0]&2)  	LED_ON(green);
-//		  	  else			LED_OFF(green);
-//	  if (/*Out*/Buffer[0]&4)  	LED_ON(red);
-//		  	  else			LED_OFF(red);
-//	  if (/*Out*/Buffer[0]&8)  	LED_ON(blue);
-//		  	  else			LED_OFF(blue);
-//	  //PCF8812_LIGHT_ON();
-//	  PCF8812_Putline("Receive:",2);
-//	  PCF8812_Putline(/*Out*/Buffer, 3);
-//    PCF8812_Putline("Send:",4);
-//    PCF8812_UValue("bytes ", len, "", 5);
-//    Write_to_USB(&Buffer);
-//    ClearBuf(&Buffer, 63);
-//
-//    USB_HID_SendReport("HI\n", 64);
 //	  USB_Echo();
 //	  USB_Count(1000);
-//	  Main_menu();
-	  USB_Ctrl();
+	  Main_menu();
+//	  USB_Ctrl();
+//	  LED_TOGGLE(blue);
+//	  PCF8812_Clear();
+//	  while(1);
   }
 }
 

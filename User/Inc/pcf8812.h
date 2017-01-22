@@ -237,7 +237,7 @@ static const char lcd_font[][5] =
   { 0x00, 0x45, 0x7C, 0x41, 0x00 },  // 191 Р РЋРІР‚вЂќ
 
 
-	{ 0x7E, 0x11, 0x11, 0x11, 0x7E },  // Р В РЎвЂ™ (192)
+	{ 0x7E, 0x11, 0x11, 0x11, 0x7E },  // 192 Р В РЎвЂ™ ()
 	{ 0x7F, 0x49, 0x49, 0x49, 0x33 },  // Р В РІР‚пїЅ
 	{ 0x7F, 0x49, 0x49, 0x49, 0x36 },  // Р В РІР‚в„ў
 	{ 0x7F, 0x01, 0x01, 0x01, 0x03 },  // Р В РІР‚Сљ
@@ -300,7 +300,7 @@ static const char lcd_font[][5] =
 	{ 0x7C, 0x50, 0x50, 0x20, 0x00 },  // Р РЋР Р‰
 	{ 0x28, 0x44, 0x54, 0x54, 0x38 },  // Р РЋР РЉ
 	{ 0x7C, 0x10, 0x38, 0x44, 0x38 },  // Р РЋР вЂ№
-	{ 0x08, 0x54, 0x34, 0x14, 0x7C },  // Р РЋР РЏ (255)
+	{ 0x08, 0x54, 0x34, 0x14, 0x7C },  // 255 Р РЋР РЏ ()
 };
 
 typedef const uint8_t symb_ar[5];
@@ -335,7 +335,7 @@ void PCF8812_Error(char* s);
 void PCF8812_Message(char* s);
 void PCF8812_Title(char* s);
 void PCF8812_Putline(char* s, uint8_t line);
-void PCF8812_Putline_Centre(char* s, uint8_t line);
+void PCF8812_Putline_Center(char* s, uint8_t line);
 void PCF8812_Putline_Right(char* s, uint8_t line);
 void PCF8812_SValue(char* name, int32_t value, char* unit, uint8_t line);
 void PCF8812_UValue(char* name, uint32_t value, char* unit, uint8_t line);
