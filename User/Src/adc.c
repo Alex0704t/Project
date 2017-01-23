@@ -85,11 +85,14 @@ void Read_Temp(void) {
   while(1) {
       PCF8812_Clear();
       PCF8812_Title("TEMP SENSOR");
-      value = Read_ADC1();
-      USB_Send_Int(value);
+      if(Check_delay_ms(500)) {
+        value = Read_ADC1();
+        USB_Send_Int(value);
+      }
       PCF8812_SValue("temp", value, "C", 2);
       if(Button_Get(user_button))
         return;
+      PCF8812_DELAY;
     }
 }
 
@@ -100,12 +103,14 @@ void Read_Voltage(void) {
   while(1) {
       PCF8812_Clear();
       PCF8812_Putline("VOLTAGE  (PA1-IN)", 0);
-      value = Read_ADC1();
-      value = value * U_3V / 4095;
-      USB_Send_Int(value);
-      PCF8812_Float_Value("Vdc ", value/1000.0, "V", 2);
+      if(Check_delay_ms(500)) {
+        value = Read_ADC1();
+        value = value * U_3V / 4095;
+        USB_Send_Int(value);
+      }
+      PCF8812_Float_Value("Vdc ", value / 1000.0, " V", 2);
       if(Button_Get(user_button))
         return;
-      delay_ms(500);
+      PCF8812_DELAY;
     }
 }
