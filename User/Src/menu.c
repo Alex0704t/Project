@@ -48,9 +48,9 @@ menu_s main_menu = {
 menu_s led_menu = {
     "LED",
     6,
-    {"GREEN  (0)", "ORANGE (1)", "RED    (2)", "BLUE   (3)", "ALL",         "BACK"},
-    {&led0_menu,   &led1_menu,   &led2_menu,   &led3_menu,   &led_all_menu, NULL},
-    {Go_menu,      Go_menu,      Go_menu,      Go_menu,      Go_menu,       Back_menu},
+    {"ALL",         "GREEN  (0)", "ORANGE (1)", "RED    (2)", "BLUE   (3)", "BACK"},
+    {&led_all_menu, &led0_menu,   &led1_menu,   &led2_menu,   &led3_menu,   NULL},
+    {Go_menu,       Go_menu,      Go_menu,      Go_menu,      Go_menu,      Back_menu},
     &main_menu,
     Tim4_OC_Init,
     No_op,
@@ -213,7 +213,6 @@ void Main_menu() {
 
 void Back_menu() {
 //  Buttons_Clear();
-  LED_TOGGLE(red);
   if(active_menu) {
     active_menu->DeInit();
     Enter_menu(active_menu->prev_menu);

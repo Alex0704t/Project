@@ -46,7 +46,6 @@ void Button_Int_Init(void) {
 
 uint8_t Button_Get(uint8_t button) {
   uint8_t temp = butt[button].state;
-  if(temp) LED_TOGGLE(button+1);
   butt[button].state = button_released;
   return temp;
 }

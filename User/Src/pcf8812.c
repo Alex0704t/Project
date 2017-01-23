@@ -300,7 +300,7 @@ void PCF8812_Float_Value(char* name, double value, char* unit, uint8_t line) {
   char f_str[PCF8812_STR_SIZ];
   int prec = 6;
   uint8_t name_len = strlen(name);
-  uint8_t name_wide = (name_len > 5) ? 5 : name_len;
+  uint8_t name_wide = (name_len > 6) ? 6 : name_len;
   gcvt(value, prec, f_str);
   snprintf(str, PCF8812_STR_SIZ, "%.*s% s%.3s", name_wide, name, f_str, unit);
   PCF8812_Putline_Center(str, line);
