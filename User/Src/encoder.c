@@ -127,7 +127,12 @@ int8_t Get_Enc_Count(uint8_t range) {
 }
 
 int8_t Get_Enc_Diff() {
-  int8_t temp = (int8_t)TIM3->CNT;//first read encoder counter
-  delay_ms(40);//delay between two reading
-  return (int8_t)TIM3->CNT - temp;//calculate difference encoder counter value*/
+  static int8_t prev;
+  int8_t res = 0, next = 0;
+  next = (int8_t)TIM3->CNT / 2;//first read encoder counter
+  if(prev != next)
+      PCF8812_On();//display on
+  res = next - prev;
+  prev = next;
+  return res;
 }

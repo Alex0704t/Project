@@ -10,6 +10,7 @@
 
 #include "stm32f4xx.h"
 #include "user.h"
+#include <math.h>
 //#include "main.h"
 //#include <stdlib.h>
 //#define USE_SPRINTF

@@ -182,7 +182,7 @@ void SPI2_DMA_Init(void)
 
 
 
-void Send_SPI2_DMA(uint8_t* data, uint16_t length)
+void Send_SPI2_DMA(__IO uint8_t* data, uint16_t length)
 {
   DMA1_Stream4->M0AR = (uint32_t)data;//memory address
   DMA1_Stream4->NDTR = length;//data size

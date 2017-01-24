@@ -521,13 +521,13 @@ uint32_t PCF8812_Input_Int(char* name, uint32_t min, uint32_t max) {
   int8_t col = n_dig;//selected decimal digit
   uint32_t max_mul = pow(10, n_dig - 1);//max multiplier
   uint32_t mul = max_mul;//current multiplier
+  Button_Set_Name(user_button, "OK");
+  Button_Set_Name(button_1, " <");
+  Button_Set_Name(button_2, "> ");
   while(1)
   {
   PCF8812_Clear();
   PCF8812_Title(name);
-  Button_Set_Name(user_button, "OK");
-  Button_Set_Name(button_1, " <");
-  Button_Set_Name(button_2, "> ");
   //view value
   sprintf(str, "%.*s%.*u%.*s", (PCF8812_LCD_LINE - n_dig)/2, EMPTY_STR, n_dig, result, \
                                (PCF8812_LCD_LINE - n_dig)/2 + (PCF8812_LCD_LINE - n_dig)%2, EMPTY_STR);
@@ -565,13 +565,13 @@ uint32_t PCF8812_Input_Int(char* name, uint32_t min, uint32_t max) {
 
 uint32_t PCF8812_Set_Param(Par_list* list) {
   RESET_ENC;
+  Button_Set_Name(user_button, "OK");
+  Button_Set_Name(button_1, "DOWN");
+  Button_Set_Name(button_2, "UP");
   for(;;)
     {
       PCF8812_Clear();
       PCF8812_Title(list->name);
-      Button_Set_Name(user_button, "OK");
-      Button_Set_Name(button_1, "DOWN");
-      Button_Set_Name(button_2, "UP");
       uint8_t i = Get_Enc_Count(list->num - 1);
       if(Button_Get(button_1))
         DECR_ENC(1);
@@ -594,13 +594,13 @@ void PCF8812_Input_Time() {
   int8_t col = 7;//set cursor to input year
   uint8_t min = 0, max = 0, step = 1;//input digit parameters
   int8_t* ptr = NULL;//pointer for changed data
+  Button_Set_Name(user_button, "OK");
+  Button_Set_Name(button_1, " <");
+  Button_Set_Name(button_2, "> ");
   for(;;)
     {
     PCF8812_Clear();
     PCF8812_Putline_Center("SET DATE & TIME", 0);
-    Button_Set_Name(user_button, "OK");
-    Button_Set_Name(button_1, " <");
-    Button_Set_Name(button_2, "> ");
     Get_Time_String(&temp, str, view_all);
     PCF8812_Putline_Center(str, 3);
     PCF8812_Putline("dd.mm.yy HH:MM:SS", 5);//view data & time format

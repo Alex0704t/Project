@@ -35,7 +35,7 @@ void SPI2_Init(void);
 void SPI2_DMA_Init(void);
 void Send_SPI2_byte(uint8_t data);
 void Send_SPI2_data(uint8_t* data, uint16_t length);
-void Send_SPI2_DMA(uint8_t* data, uint16_t length);
+void Send_SPI2_DMA(__IO uint8_t* data, uint16_t length);
 void Send_SPI2_buff();
 
 void I2S3_Init(void);

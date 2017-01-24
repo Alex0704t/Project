@@ -212,7 +212,6 @@ void Main_menu() {
 }
 
 void Back_menu() {
-//  Buttons_Clear();
   if(active_menu) {
     active_menu->DeInit();
     Enter_menu(active_menu->prev_menu);
