@@ -456,9 +456,8 @@ void SetVolume(void)
       INCR_ENC(VOLUME_STEP);
     if(Button_Get(user_button))
       break;
-//    volume += Get_Enc_Count(100);
     volume += Get_Enc_Diff();
-    volume = (volume > 100) ? 0 :
+    volume = (volume > 100) ? 0   :
              (volume < 0)   ? 100 : volume;
     PCF8812_Percent("Volume", volume, 2);
     EVAL_AUDIO_VolumeCtl(volume);
