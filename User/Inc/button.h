@@ -46,7 +46,7 @@ typedef struct button_s{
 void Button_Clear(uint8_t button);
 void Buttons_Clear();
 uint8_t Button_Get(uint8_t button);
-uint8_t Check_Button(uint8_t button);
+uint8_t Button_Check(uint8_t button);
 void Button_Handler();
 void Button_Handle(uint8_t button);
 void Button_Execute(uint8_t button);

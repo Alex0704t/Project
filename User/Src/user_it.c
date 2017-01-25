@@ -218,7 +218,7 @@ void DMA1_Stream7_IRQHandler(void)
 #ifdef USE_MP3
   EVAL_AUDIO_TransferComplete_CallBack();
 #else
-  BeepHandler();
+  Beep_Handler();
 #endif
 }
 

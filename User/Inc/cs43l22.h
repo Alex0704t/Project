@@ -257,9 +257,9 @@ enum beep_off
 
 void Get_Audiochip_ID(void);
 void Audio_Reset_Init();
-void StartBeep(uint8_t beep_freq, uint8_t volume, uint8_t beep_on, uint8_t beep_off);
-void StopBeep();
-void SetBeep();
+void Beep_Start(uint8_t beep_freq, uint8_t volume, uint8_t beep_on, uint8_t beep_off);
+void Beep_Stop();
+void Beep_Set();
 void AnalogWave_Init(uint16_t frequency, uint8_t volume);
 void AnalogWave_Start();
 void AnalogWave_Stop();
@@ -282,7 +282,7 @@ void EVAL_SET_DMA(int next_puffer_len, int16_t *next_samples);
 
 //--------------------------------------------------------------
 void EVAL_AUDIO_TransferComplete_CallBack(void);
-void BeepHandler();
+void Beep_Handler();
 
  
 #endif // __CS43L22_H

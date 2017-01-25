@@ -330,10 +330,10 @@ void Get_Audiochip_ID(void)
   delay_ms(2000);
 }
 
-void StartBeep(uint8_t beep_freq, uint8_t volume, uint8_t beep_on, uint8_t beep_off)
+void Beep_Start(uint8_t beep_freq, uint8_t volume, uint8_t beep_on, uint8_t beep_off)
 {
   EVAL_AUDIO_Init(volume);
-  EVAL_SET_DMA(1, (uint16_t *)0x00);//send "dummy" byte
+  EVAL_SET_DMA(1, (int16_t *)0x00);//send "dummy" byte
   EVAL_AUDIO_Play();
 
   Codec_WriteRegister(POW_CONT_1, POW_DOWN_1);//cs43l22 power down
@@ -366,7 +366,7 @@ void StartBeep(uint8_t beep_freq, uint8_t volume, uint8_t beep_on, uint8_t beep_
 
 }
 
-void StopBeep()
+void Beep_Stop()
 {
   EVAL_AUDIO_Stop(CODEC_PDWN_HW);
   NVIC_DisableIRQ(DMA1_Stream7_IRQn);
@@ -377,15 +377,15 @@ extern Par_list beep_on_list;
 extern Par_list beep_off_list;
 
 
-void SetBeep()
+void Beep_Set()
 {
   uint8_t freq = PCF8812_Set_Param(&beep_freq_list);
   uint8_t on = PCF8812_Set_Param(&beep_on_list);
   uint8_t off = (on != cont_mode) ? PCF8812_Set_Param(&beep_off_list) : 0;
-  StartBeep(freq, 70, on, off);
+  Beep_Start(freq, 70, on, off);
 }
 
-void BeepHandler()
+void Beep_Handler()
 {
   if(DMA1->HISR & DMA_HISR_TCIF7)//transfer complete
     {
@@ -397,8 +397,8 @@ void BeepHandler()
 
 void AnalogWave_Init(uint16_t frequency, uint8_t volume)
 {
-  EVAL_AUDIO_Init(volume);
   EVAL_SET_DMA(1, (int16_t *)0x00);//send "dummy" byte
+  EVAL_AUDIO_Init(volume);
   EVAL_AUDIO_Play();
 
   //DAC1_Init();

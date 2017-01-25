@@ -51,13 +51,14 @@ uint8_t Button_Get(uint8_t button) {
 }
 
 void Button_Clear(uint8_t button) {
-  butt[button].enable = RESET;
-  strncpy(butt[button].name, "     ", BUTTON_NAME_SIZE);
-  butt[button].press_act = NULL;
-  butt[button].repeat_ms = 0;
-  butt[button].hold_act = NULL;
-  butt[button].count = 0;
-  butt[button].state = button_released;
+//  butt[button].enable = RESET;
+//  strncpy(butt[button].name, "     ", BUTTON_NAME_SIZE);
+//  butt[button].press_act = NULL;
+//  butt[button].repeat_ms = 0;
+//  butt[button].hold_act = NULL;
+//  butt[button].count = 0;
+//  butt[button].state = button_released;
+  butt[button] = (button_s){0};
 }
 
 void Buttons_Clear() {
@@ -78,7 +79,7 @@ void Button_Handler() {
 void Button_Handle(uint8_t button) {
   PCF8812_Butt_name(button, butt[button].name);
   //if button pressing
-      if(Check_Button(button)) {
+      if(Button_Check(button)) {
           PCF8812_On();
           PCF8812_Butt_ind(button);
   //increment counter
@@ -163,21 +164,28 @@ void Buttons_Executor() {
 }
 
 void Button_Set(uint8_t button, button_s *in) {
+//  Button_Clear(button);
+//  Button_Init(button);
+//  strncpy(butt[button].name, in->name, BUTTON_NAME_SIZE);
+//  butt[button].press_act = in->press_act;
+//  if(!in->hold_act) {
+//    butt[button].hold_act = in->press_act;
+//    butt[button].repeat_ms = 500;
+//  }
+//  else {
+//    butt[button].hold_act = in->hold_act;
+//    butt[button].repeat_ms = in->repeat_ms;
+//  }
+//  butt[button].count = 0;
+//  butt[button].state = button_released;
+//  butt[button].enable = SET;
   Button_Clear(button);
   Button_Init(button);
-  strncpy(butt[button].name, in->name, BUTTON_NAME_SIZE);
-//  butt[button].name = in->name;
-  butt[button].press_act = in->press_act;
   if(!in->hold_act) {
-    butt[button].hold_act = in->press_act;
-    butt[button].repeat_ms = 500;
+    in->hold_act = in->press_act;
+    in->repeat_ms = 500;
   }
-  else {
-    butt[button].hold_act = in->hold_act;
-    butt[button].repeat_ms = in->repeat_ms;
-  }
-  butt[button].count = 0;
-  butt[button].state = button_released;
+  butt[button] = *in;
   butt[button].enable = SET;
 }
 
@@ -189,7 +197,7 @@ void Button_Set_Name(uint8_t button, char* name) {
   Button_Set(button, &temp);
 }
 
-uint8_t Check_Button(uint8_t button) {
+uint8_t Button_Check(uint8_t button) {
   return (button == user_button)  ? PRESS_USER_BUTTON :
          (button == button_1)     ? PRESS_BUTTON_1    :
          (button == button_2)     ? PRESS_BUTTON_2    : 0;

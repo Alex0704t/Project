@@ -10,13 +10,15 @@
 
 
 #include "user.h"
+#include "pcf8812.h"
 
 #define MAX_OPT         6
 #define OPT_LEN         16
 #define BUTT_NUM        3
 #define USB_SEND_PERIOD 1000
+#define MENU_NAME_SIZE  17//PCF8812_STR_SIZ
 
-#define BREAK_OUT       if(brk_flag) {\
+//#define BREAK_OUT       if(brk_flag) {\
                         brk_flag = 0; \
                         active_menu->DeInit(); \
                         break;}
@@ -24,7 +26,7 @@
 typedef void (*p_func)(void);
 
 typedef struct menu {
-  char* name;//menu name
+  char name[MENU_NAME_SIZE];//menu name
   uint8_t num;//options num
   char* option[MAX_OPT];//options names
   struct menu* next_menu[MAX_OPT];//next menu pointers
@@ -88,7 +90,7 @@ void Send_Count(void);
 /*********************************************************************/
 void Sine_Init();
 void Sine_Set();
-void Beep_Start();
+void Beep_Run();
 void Audio_Init();
 /*********************************************************************/
 

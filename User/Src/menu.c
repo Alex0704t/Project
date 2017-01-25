@@ -167,7 +167,7 @@ menu_s beep_menu = {
     4,
     {"START",     "SET",    "STOP",    "BACK"},
     {NULL,        NULL,     NULL,      NULL},
-    {Beep_Start,  SetBeep,  StopBeep,  Back_menu},
+    {Beep_Run,  Beep_Set,  Beep_Stop,  Back_menu},
     &audio_menu,
     No_op,
     No_op,
@@ -395,7 +395,7 @@ void Audio_Init()
   EVAL_AUDIO_Init(70);
 }
 
-void Beep_Start()
+void Beep_Run()
 {
-  StartBeep(freq1000, 70, on_1s2, off_1s23);
+  Beep_Start(freq1000, 70, on_1s2, off_1s23);
 }
