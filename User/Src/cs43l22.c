@@ -17,6 +17,8 @@ static uint32_t Codec_Mute(uint32_t Cmd);
 static uint32_t Codec_VolumeCtrl(uint8_t volume);
 static void Audio_MAL_PauseResume(uint32_t Cmd, uint32_t Addr);
 
+uint8_t volume_level;
+
 //--------------------------------------------------------------
 uint32_t EVAL_AUDIO_Init(uint8_t volume)
 {
@@ -109,6 +111,7 @@ void EVAL_AUDIO_StopDMA(void)
 uint32_t EVAL_AUDIO_VolumeCtl(uint8_t volume)
 {
   /* Call the codec volume control function with converted volume value */
+  volume_level = volume;
   return (Codec_VolumeCtrl(VOLUME_CONVERT(volume)));
 }
 
@@ -211,6 +214,10 @@ static uint32_t Codec_VolumeCtrl(uint8_t volume)
     counter += Codec_WriteRegister(MSTA, volume + 0x19);
     counter += Codec_WriteRegister(MSTB, volume + 0x19);
   }
+  if (volume > 0x7E)//for DAC output
+    counter += Codec_WriteRegister(PASS_A_VOL, volume - 0x80);
+  else
+    counter += Codec_WriteRegister(PASS_A_VOL, volume + 0x80);
   return counter;
 }
 
@@ -439,9 +446,11 @@ void AnalogWave_Set(uint16_t frequency, uint8_t volume)
   Tim6_Set(frequency);
 }
 
+
+
 void SetVolume(void)
 {
-  int8_t volume = 30;
+  int8_t value = volume_level;
   RESET_ENC;
   Button_Set_Name(user_button, "OK");
   Button_Set_Name(button_1, "-10%");
@@ -456,11 +465,11 @@ void SetVolume(void)
       INCR_ENC(VOLUME_STEP);
     if(Button_Get(user_button))
       break;
-    volume += Get_Enc_Diff();
-    volume = (volume > 100) ? 0   :
-             (volume < 0)   ? 100 : volume;
-    PCF8812_Percent("Volume", volume, 2);
-    EVAL_AUDIO_VolumeCtl(volume);
+    value += Get_Enc_Diff();
+    value = (value > 100) ? 0   :
+             (value < 0)   ? 100 : value;
+    PCF8812_Percent("Volume", value, 2);
+    EVAL_AUDIO_VolumeCtl(value);
     PCF8812_DELAY;
     }
 }
