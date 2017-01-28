@@ -14,7 +14,7 @@
 #define APB1_FREQ          84000000//TIM counter clock (prescaled APB1)
 #define APB2_FREQ          168000000//TIM counter clock (prescaled APB2)
 
-#define RESET_ENC         (TIM3->CNT = 0)//reset enc counter
+
 #define SET_ENC(value)    (TIM3->CNT = value)//set enc counter value
 #define INCR_ENC(value)   (TIM3->CNT += 2*value)//increase enc counter
 #define DECR_ENC(value)   (TIM3->CNT -= 2*value)//decrease enc counter

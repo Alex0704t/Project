@@ -11,6 +11,7 @@
 
 #include "user.h"
 #include "pcf8812.h"
+#include "cs43l22.h"
 
 #define MAX_OPT         6
 #define OPT_LEN         16

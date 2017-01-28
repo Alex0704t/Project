@@ -110,29 +110,35 @@ void Enc_State(void) {
 	}
 }
 
-int8_t Get_Enc_Count(uint8_t range) {
-  static int8_t prev = 0;
-  int8_t ret = 0;
-  ret = TIM3->CNT / 2;
-  if(ret > range)
-    RESET_ENC;
-  if(ret < 0) {
-    TIM3->CNT = 2 * range;
-    ret = range;
-    }
-  if(prev != ret)
-    PCF8812_On();//display on
-  prev = ret;
-	return ret;
+static int8_t enc_current;
+
+void Enc_Set_Zero() {
+  SET_ENC(0);
+  enc_current = 0;
 }
 
+int8_t Get_Enc_Count(uint8_t range) {
+  int8_t res = 0;
+  res = TIM3->CNT / 2;
+  if(res > range)
+    SET_ENC(0);
+  if(res < 0) {
+    TIM3->CNT = 2 * range;
+    res = range;
+    }
+  if(res != enc_current)
+    PCF8812_On();//display on
+  enc_current = res;
+	return res;
+}
+
+
 int8_t Get_Enc_Diff() {
-  static int8_t prev;
   int8_t res = 0, next = 0;
   next = (int8_t)TIM3->CNT / 2;//first read encoder counter
-  if(prev != next)
+  if(next != enc_current)
       PCF8812_On();//display on
-  res = next - prev;
-  prev = next;
+  res = next - enc_current;
+  enc_current = next;
   return res;
 }

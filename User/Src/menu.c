@@ -247,8 +247,10 @@ inline void Prev_item() {
   DECR_ENC(1);
 }
 
+extern uint8_t current_vol;
+
 void Enter_menu(menu_s* menu) {
-  RESET_ENC;//reset encoder counter
+  Enc_Set_Zero();
   while(1) {
   if(active_menu != menu) {
       active_menu = menu;//set current menu
@@ -377,25 +379,26 @@ void Send_Count(void)
  * *********************************************************************
  */
 
+
 void Sine_Init()
 {
-  AnalogWave_Init(1000, 30);
+  AnalogWave_Init(1000);
 }
 
 void Sine_Set()
 {
   uint32_t freq = PCF8812_Input_Int("Frequency", 20, 20000);
   AnalogWave_Stop();
-  AnalogWave_Init(freq, 30);
+  AnalogWave_Init(freq);
   AnalogWave_Start();
 }
 
 void Audio_Init()
 {
-  EVAL_AUDIO_Init(70);
+  EVAL_AUDIO_Init(current_vol);
 }
 
 void Beep_Run()
 {
-  Beep_Start(freq1000, 70, on_1s2, off_1s23);
+  Beep_Start(freq1000, on_1s2, off_1s23);
 }

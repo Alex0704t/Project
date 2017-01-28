@@ -17,7 +17,8 @@ static uint32_t Codec_Mute(uint32_t Cmd);
 static uint32_t Codec_VolumeCtrl(uint8_t volume);
 static void Audio_MAL_PauseResume(uint32_t Cmd, uint32_t Addr);
 
-uint8_t volume_level;
+
+volatile uint8_t current_vol = START_VOLUME;
 
 //--------------------------------------------------------------
 uint32_t EVAL_AUDIO_Init(uint8_t volume)
@@ -111,7 +112,7 @@ void EVAL_AUDIO_StopDMA(void)
 uint32_t EVAL_AUDIO_VolumeCtl(uint8_t volume)
 {
   /* Call the codec volume control function with converted volume value */
-  volume_level = volume;
+  current_vol = volume;
   return (Codec_VolumeCtrl(VOLUME_CONVERT(volume)));
 }
 
@@ -199,25 +200,26 @@ static uint32_t Codec_Mute(uint32_t Cmd)
 
 
 //--------------------------------------------------------------
-static uint32_t Codec_VolumeCtrl(uint8_t volume)
-{
+static uint32_t Codec_VolumeCtrl(uint8_t volume) {
   uint32_t counter = 0;
-  if (volume > 0xE6)
-  {
+  if (volume > 0xE6) {
     /* Set the Master volume */
     counter += Codec_WriteRegister(MSTA, volume - 0xE7);
     counter += Codec_WriteRegister(MSTB, volume - 0xE7);
   }
-  else
-  {
+  else {
     /* Set the Master volume */
     counter += Codec_WriteRegister(MSTA, volume + 0x19);
     counter += Codec_WriteRegister(MSTB, volume + 0x19);
   }
-  if (volume > 0x7E)//for DAC output
+  if (volume > 0x7E) {//for DAC output
     counter += Codec_WriteRegister(PASS_A_VOL, volume - 0x80);
-  else
+    counter += Codec_WriteRegister(PASS_B_VOL, volume - 0x80);
+  }
+  else {
     counter += Codec_WriteRegister(PASS_A_VOL, volume + 0x80);
+    counter += Codec_WriteRegister(PASS_B_VOL, volume - 0x80);
+  }
   return counter;
 }
 
@@ -270,7 +272,6 @@ static void Audio_MAL_PauseResume(uint32_t Cmd, uint32_t Addr)
               transfer is paused till the next enable of the stream.
               This feature is not available on STM32F40x devices. */
     DMA1_Stream7->CR &= ~DMA_SxCR_EN;
-
   }
   else /* AUDIO_RESUME */
   {
@@ -337,9 +338,9 @@ void Get_Audiochip_ID(void)
   delay_ms(2000);
 }
 
-void Beep_Start(uint8_t beep_freq, uint8_t volume, uint8_t beep_on, uint8_t beep_off)
+void Beep_Start(uint8_t beep_freq, uint8_t beep_on, uint8_t beep_off)
 {
-  EVAL_AUDIO_Init(volume);
+//  EVAL_AUDIO_Init(current_vol);
   EVAL_SET_DMA(1, (int16_t *)0x00);//send "dummy" byte
   EVAL_AUDIO_Play();
 
@@ -389,7 +390,7 @@ void Beep_Set()
   uint8_t freq = PCF8812_Set_Param(&beep_freq_list);
   uint8_t on = PCF8812_Set_Param(&beep_on_list);
   uint8_t off = (on != cont_mode) ? PCF8812_Set_Param(&beep_off_list) : 0;
-  Beep_Start(freq, 70, on, off);
+  Beep_Start(freq, on, off);
 }
 
 void Beep_Handler()
@@ -402,12 +403,11 @@ void Beep_Handler()
     }
 }
 
-void AnalogWave_Init(uint16_t frequency, uint8_t volume)
+void AnalogWave_Init(uint16_t frequency)
 {
   EVAL_SET_DMA(1, (int16_t *)0x00);//send "dummy" byte
-  EVAL_AUDIO_Init(volume);
+  EVAL_AUDIO_Init(current_vol);
   EVAL_AUDIO_Play();
-
   //DAC1_Init();
   Tim6_Init(frequency);
   //DAC1_Init();
@@ -440,9 +440,9 @@ void AnalogWave_Stop()
   Tim6_Stop();
 }
 
-void AnalogWave_Set(uint16_t frequency, uint8_t volume)
+void AnalogWave_Set(uint16_t frequency)
 {
-  EVAL_AUDIO_VolumeCtl(volume);
+//  EVAL_AUDIO_VolumeCtl(volume);
   Tim6_Set(frequency);
 }
 
@@ -450,13 +450,11 @@ void AnalogWave_Set(uint16_t frequency, uint8_t volume)
 
 void SetVolume(void)
 {
-  int8_t value = volume_level;
-  RESET_ENC;
+  Enc_Set_Zero();
   Button_Set_Name(user_button, "OK");
   Button_Set_Name(button_1, "-10%");
   Button_Set_Name(button_2, "+10%");
-  while(1)
-    {
+  while(1) {
     PCF8812_Clear();
     PCF8812_Title("VOLUME");
     if(Button_Get(button_1))
@@ -465,13 +463,13 @@ void SetVolume(void)
       INCR_ENC(VOLUME_STEP);
     if(Button_Get(user_button))
       break;
-    value += Get_Enc_Diff();
-    value = (value > 100) ? 0   :
-             (value < 0)   ? 100 : value;
-    PCF8812_Percent("Volume", value, 2);
-    EVAL_AUDIO_VolumeCtl(value);
+    current_vol += Get_Enc_Diff();
+    current_vol = (current_vol > 100) ? 0   :
+                  (current_vol < 0)   ? 100 :current_vol;
+    EVAL_AUDIO_VolumeCtl(current_vol);
+    PCF8812_Percent("", current_vol, 2);
     PCF8812_DELAY;
-    }
+  }
 }
 
 

@@ -200,6 +200,8 @@
 #define SPKB_SHRT       0x10//Speaker B Current Load Status
 #define SPKR_HP         0x08//SPKR/HP Pin Status
 
+#define START_VOLUME 60
+
 
 enum beep_freq
 {
@@ -257,13 +259,13 @@ enum beep_off
 
 void Get_Audiochip_ID(void);
 void Audio_Reset_Init();
-void Beep_Start(uint8_t beep_freq, uint8_t volume, uint8_t beep_on, uint8_t beep_off);
+void Beep_Start(uint8_t beep_freq, uint8_t beep_on, uint8_t beep_off);
 void Beep_Stop();
 void Beep_Set();
-void AnalogWave_Init(uint16_t frequency, uint8_t volume);
+void AnalogWave_Init(uint16_t frequency);
 void AnalogWave_Start();
 void AnalogWave_Stop();
-void AnalogWave_Set(uint16_t frequency, uint8_t volume);
+void AnalogWave_Set(uint16_t frequency);
 
 void SetVolume(void);
 

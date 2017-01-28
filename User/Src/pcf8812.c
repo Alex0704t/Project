@@ -564,7 +564,7 @@ uint32_t PCF8812_Input_Int(char* name, uint32_t min, uint32_t max) {
 }
 
 uint32_t PCF8812_Set_Param(Par_list* list) {
-  RESET_ENC;
+  Enc_Set_Zero();
   Button_Set_Name(user_button, "OK");
   Button_Set_Name(button_1, "DOWN");
   Button_Set_Name(button_2, "UP");

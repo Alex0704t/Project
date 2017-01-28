@@ -11,7 +11,7 @@ STLINK:=				st-link_cli
 LDSCRIPT:=				standalone.ld
 REMOVE:=				rm -f	
 DEBUG:=					-g2
-#OPTIM:=				-O2
+#OPTIM:=					-O2
 OPTIM:=					-O3
 STANDART:=				-std=gnu11
 #STANDART:=				-std=gnu99

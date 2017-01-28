@@ -38,7 +38,7 @@ void Led_Set(uint8_t led, uint8_t value)
 void Led_Brightness(uint8_t led, char* name) {
   uint8_t bright = 0;
   RESET_BLINK(led);
-  RESET_ENC;
+  Enc_Set_Zero();
   Button_Set_Name(user_button, "OK");
   Button_Set_Name(button_1, "-10%");
   Button_Set_Name(button_2, "+10%");
@@ -134,7 +134,7 @@ void Led_Blink(uint8_t led, uint16_t on_time, uint16_t off_time)
 void Set_Blink(uint8_t led, char* name)
 {
   uint16_t on_time = 0, off_time = 0;
-  RESET_ENC;
+  Enc_Set_Zero();
   Button_Set_Name(user_button, "OK");
   Button_Set_Name(button_1, "-0.5s");
   Button_Set_Name(button_2, "+0.5s");
@@ -153,7 +153,7 @@ void Set_Blink(uint8_t led, char* name)
       break;
     PCF8812_DELAY;
     }
-  RESET_ENC;
+  Enc_Set_Zero();
   INCR_ENC(TIME_STEP);
   while(1)
     {

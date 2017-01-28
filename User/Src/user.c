@@ -17,7 +17,6 @@ void MCU_Init() {
   RTC_Init();
   PCF8812_Test();
   USB_HID_Init();
-  //UB_USB_CDC_Init();
   //SCB->CPACR |= 0x00F00000;//enable FPU
   //Audio_Init();
   //AnalogWave_Init(1000, 30);
