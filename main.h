@@ -34,6 +34,7 @@
 #define ABS(x)         (x < 0) ? (-x) : x
 #define MAX(a,b)       (a < b) ? (b) : a
 #define USE_FULL_ASSERT
+#define PWM_LED_CONTROL
 
 #endif /* __STM32F4_DISCOVERY_USB_HID_H */
 

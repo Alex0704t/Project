@@ -25,6 +25,7 @@ void Tim4_OC_Init(void)
 {
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;//GPIOD clock enable
 	GPIOD->MODER &= ~0xFF000000;//Clear Pin 12,13,14,15 mode
+//	GPIOD->MODER |= 0x55000000;//PD12,13,14,15 output
 	GPIOD->MODER |= 0xAA000000;//Pin 12,13,14,15 alternative function
 	GPIOD->OSPEEDR &= ~0xFF000000;//Low speed PD12,13,14,15
 	GPIOD->OTYPER &= ~0xF000;//Push-pull PD12,13,14,15

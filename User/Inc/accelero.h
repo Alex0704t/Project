@@ -9,11 +9,17 @@
 #define USER_ACCELERO_H_
 
 #include "user.h"
+#include "spi.h"
+#include "led.h"
 #include "stm32f4xx.h"
 
+typedef struct axis{int16_t x;
+                    int16_t y;
+                    int16_t z;
+                   }axis_s;
 
-#define CS_ON() GPIOE->BSRR = GPIO_BSRR_BR_3
-#define CS_OFF() GPIOE->BSRR = GPIO_BSRR_BS_3
+#define LIS3DSH_CS_ON()   GPIOE->BSRR = GPIO_BSRR_BR_3
+#define LIS3DSH_CS_OFF()  GPIOE->BSRR = GPIO_BSRR_BS_3
 #define DUMMY 0x00
 #define WHO_I_AM 0x0F
 #define I_AM_LIS3DSH 0x3F
@@ -82,6 +88,16 @@
 #define MASK_N_X 0x80
 #define MASK_XY 0xF0
 #define MASK_XYZ 0xFC
+/*STATUS REGISTER****************************/
+#define STAT_REG 0x27
+#define STAT_ZYXOR 0x80//X-, Y- and Z-axis data overrun
+#define STAT_ZOR 0x40//Z-axis data overrun
+#define STAT_YOR 0x20//Y-axis data overrun
+#define STAT_XOR 0x10//X-axis data overrun
+#define STAT_ZYXDA 0x08//X-, Y- and Z-axis new data available
+#define STAT_ZDA 0x04//Z-axis new data available
+#define STAT_YDA 0x04//Y-axis new data available
+#define STAT_XDA 0x04//X-axis new data available
 /*OUT_DATA***********************************/
 #define OUT_DATA 0x28
 /*THRS1_1************threshold value for SM1*/
@@ -152,18 +168,15 @@
 #define STIM4 0x42
 #define SRTAM1 0xBB
 
-void CS_Init(void);
-void Accelero_Init(void);
-void Accelero_EN(void);
-void AcceleroINT2_Init(void);
+void LIS3DSH_CS_Init(void);
+void LIS3DSH_Init(void);
+void LIS3DSH_En(void);
+void LIS3DSH_Int2_Init(void);
+axis_s LIS3DSH_Decode(uint8_t *data, uint8_t axis_num);
 void Dir_Led(void);
 void MovDetectEN(void);
+void LIS3DSH_View();
 
-void WriteSPI1(uint8_t addr, uint8_t *data, uint8_t size);
-void ReadSPI1(uint8_t addr, uint8_t *data, uint8_t size);
-void WriteRegSPI1(uint8_t addr, uint8_t value);
-uint8_t ReadRegSPI1(uint8_t addr);
-void SetRegSPI1(uint8_t addr, uint8_t value);
-uint8_t CheckRegSPI1(uint8_t addr, uint8_t value);
+
 
 #endif /* USER_ACCELERO_H_ */

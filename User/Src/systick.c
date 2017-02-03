@@ -30,7 +30,7 @@ void Clock_Init(void) {
   SysTick_Config(168000 - 1);//systick interrupt each 1 ms
 
   NVIC_SetPriorityGrouping(4);//4 field for priority group
-  }
+}
 
 
 
@@ -38,58 +38,29 @@ void Inc_Tick(void) {
   Tick++;
 }
 
-uint32_t Get_Tick(void)
-{
+uint32_t Get_Tick(void) {
   return Tick;
 }
 
-void delay_ms(uint32_t delay)
-{
+void delay_ms(uint32_t delay) {
   uint32_t tickstart = 0;
   tickstart = Get_Tick();
   while((Get_Tick() - tickstart) < delay);
 }
 
-uint8_t Check_delay_ms(uint32_t delay)
-{
+uint8_t Check_delay_ms(uint32_t delay) {
   static uint32_t tickstart = 0;
   if(!tickstart)
     tickstart = Get_Tick();
   if((Get_Tick() - tickstart) < delay)
     return 0;
-  else
-    {
-      tickstart = 0;
-      return 1;
-    }
+  else {
+    tickstart = 0;
+    return 1;
+  }
 }
 
-void GPIO_Clock_En(void)
-{
-#ifdef USE_GPIOA
-  RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;//GPIOA clock enable
-#endif
 
-#ifdef USE_GPIOB
-  RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;//GPIOB clock enable
-#endif
-
-#ifdef USE_GPIOC
-  RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;//GPIOC clock enable
-#endif
-
-#ifdef USE_GPIOD
-  RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;//GPIOC clock enable
-#endif
-
-#ifdef USE_GPIOE
-  RCC->AHB1ENR |= RCC_AHB1ENR_GPIOEEN;//GPIOE clock enable
-#endif
-
-#ifdef USE_GPIOH
-  RCC->AHB1ENR |= RCC_AHB1ENR_GPIOHEN;//GPIOH clock enable
-#endif
-}
 
 /*
 ; CPACR is located at address 0xE000ED88

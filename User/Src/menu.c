@@ -35,8 +35,8 @@ button_s prev       = {.enable = SET, .name = "PREV", .press_act = Prev_item};
 menu_s main_menu = {
     "MAIN",
     5,
-    {"LED",      "USB",      "ADC",      "AUDIO",      "SETTINGS"},
-    {&led_menu,  &usb_menu,  &adc_menu,  &audio_menu,  &setting_menu},
+    {"LED",      "USB",      "ADC",      "AUDIO",      "OTHER"},
+    {&led_menu,  &usb_menu,  &adc_menu,  &audio_menu,  &other_menu},
     {Go_menu,    Go_menu,    Go_menu,    Go_menu,      Go_menu},
     NULL,
     No_op,
@@ -188,12 +188,12 @@ menu_s wave_menu = {
     {&sel_item, &back, &next}
 };
 /*********************************************************************/
-menu_s setting_menu = {
-    "SETTINGS",
+menu_s other_menu = {
+    "OTHER",
     5,
-    {"DATE & TIME",         "NO_OP",     "NO_OP",        "NO_OP",  "BACK"},
-    {NULL,                  NULL,        NULL,           NULL,     NULL},
-    {PCF8812_Input_Time,    No_op,       No_op,          No_op,    Back_menu},
+    {"DATE & TIME",         "ACCELEROMETER", "NO_OP", "NO_OP",  "BACK"},
+    {NULL,                  NULL,            NULL,    NULL,     NULL},
+    {PCF8812_Input_Time,    No_op,           No_op,   No_op,    Back_menu},
     &main_menu,
     No_op,
     No_op,
@@ -334,27 +334,27 @@ void LED_all_Bright(void)
 /*********************************************************************/
 void LED0_Blink(void)
 {
-  Set_Blink(green, "LED0 (GREEN)");
+  Led_Set_Blink(green, "LED0 (GREEN)");
 }
 
 void LED1_Blink(void)
 {
-  Set_Blink(orange, "LED1 (ORANGE)");
+  Led_Set_Blink(orange, "LED1 (ORANGE)");
 }
 
 void LED2_Blink(void)
 {
-  Set_Blink(red, "LED2 (RED)");
+  Led_Set_Blink(red, "LED2 (RED)");
 }
 
 void LED3_Blink(void)
 {
-  Set_Blink(blue, "LED3 (BLUE)");
+  Led_Set_Blink(blue, "LED3 (BLUE)");
 }
 
 void LED_all_Blink(void)
 {
-  Set_Blink(led_all, "LED ALL");
+  Led_Set_Blink(led_all, "LED ALL");
 }
 /*
  * *********************************************************************

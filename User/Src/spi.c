@@ -12,8 +12,7 @@ uint8_t tx_spi1_buff[SPI1_BUFSIZE] = {0};
 uint8_t rx_spi1_buff[SPI1_BUFSIZE] = {0};
 __IO uint8_t AxData[7];
 
-void SPI1_Init(void)
-{
+void SPI1_Init(void) {
 	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
 	/*
@@ -37,11 +36,67 @@ void SPI1_Init(void)
 	SPI1->CR1 |= SPI_CR1_SSI;//external slave select
 	SPI1->CR1 |= SPI_CR1_SPE;//SPI enable
 
-
 	NVIC_SetPriority(SPI1_IRQn, 4);
 	NVIC_EnableIRQ(SPI1_IRQn);//IRQ handler
 }
 
+void WriteSPI1(uint8_t addr, uint8_t *data, uint8_t size) {
+  uint8_t temp = 0;
+  LIS3DSH_CS_ON();
+  while(!(SPI1->SR & SPI_SR_TXE));
+  SPI1->DR = addr;
+  while(!(SPI1->SR & SPI_SR_RXNE));
+  temp = SPI1->DR;
+  while(size--) {
+    while(!(SPI1->SR & SPI_SR_TXE));
+    SPI1->DR = *data++;
+    while(!(SPI1->SR & SPI_SR_RXNE));
+    temp = SPI1->DR;
+  }
+  LIS3DSH_CS_OFF();
+}
+
+void ReadSPI1(uint8_t addr, uint8_t *data, uint8_t size) {
+  uint8_t temp = 0;
+  addr |= 0x80;
+  LIS3DSH_CS_ON();
+  while(!(SPI1->SR & SPI_SR_TXE));
+  SPI1->DR = addr;
+  while(!(SPI1->SR & SPI_SR_RXNE));
+  temp = SPI1->DR;
+  while(size--) {
+    while(!(SPI1->SR & SPI_SR_TXE));
+    SPI1->DR = DUMMY;
+    while(!(SPI1->SR & SPI_SR_RXNE));
+    *data++ = SPI1->DR;
+  }
+  LIS3DSH_CS_OFF();
+}
+
+void WriteRegSPI1(uint8_t addr, uint8_t value) {
+  WriteSPI1(addr, &value, 1);
+}
+
+uint8_t ReadRegSPI1(uint8_t addr) {
+  uint8_t data = 0;
+  ReadSPI1(addr, &data, 1);
+  return data;
+}
+
+void SetRegSPI1(uint8_t addr, uint8_t value) {
+  uint8_t temp = ReadRegSPI1(addr);
+  temp |= value;
+  WriteSPI1(addr, &temp, 1);
+}
+
+uint8_t CheckRegSPI1(uint8_t addr, uint8_t value) {
+  uint8_t data = 0;
+  ReadSPI1(addr, &data, 1);
+  if (data == value)
+    return SET;
+  else
+    return RESET;
+}
 
 void SPI1_DMA_Init(void)
 {
@@ -56,9 +111,9 @@ void SPI1_DMA_Init(void)
 	//DMA2_Stream3->CR |= DMA_SxCR_TCIE;//transfer complete interrupt enable
 	DMA2_Stream3->PAR = (uint32_t)&(SPI1->DR);//peripheral address
 	DMA2_Stream3->M0AR = (uint32_t)(tx_spi1_buff);//memory address
-	DMA2_Stream3->NDTR = 10;//data size
+	DMA2_Stream3->NDTR = SPI1_BUFSIZE;//data size
 	SPI1->CR2 |= SPI_CR2_TXDMAEN;//Tx buffer DMA enable
-	/*SPI1 RX DMA2 Stream0 channel3*/
+	/** SPI1 RX DMA2 Stream_0 channel_3*/
 	DMA2_Stream0->CR |= DMA_SxCR_CHSEL_0|DMA_SxCR_CHSEL_1;//channel3 select
 	DMA2_Stream0->CR |= DMA_SxCR_PL_0;//medium priority
 	DMA2_Stream0->CR &= ~(DMA_SxCR_MSIZE|DMA_SxCR_PSIZE);//memory & peripheral data size 1 byte
@@ -67,7 +122,7 @@ void SPI1_DMA_Init(void)
 	//DMA2_Stream0->CR |= DMA_SxCR_TCIE;//transfer complete interrupt enable
 	DMA2_Stream0->PAR = (uint32_t)&(SPI1->DR);//peripheral address
 	DMA2_Stream0->M0AR = (uint32_t)(rx_spi1_buff);//memory address
-	DMA2_Stream0->NDTR = 10;//data size
+	DMA2_Stream0->NDTR = SPI1_BUFSIZE;//data size
 	SPI1->CR2 |= SPI_CR2_RXDMAEN;//Rx buffer DMA enable
 
 	NVIC_SetPriority(DMA2_Stream3_IRQn, 4);
@@ -76,13 +131,13 @@ void SPI1_DMA_Init(void)
 	NVIC_EnableIRQ(DMA2_Stream0_IRQn);//IRQ handler
 }
 
-void GetAxData(void)
-{
-	uint8_t addr = 0;
-	addr = OUT_DATA|0x80;
-	tx_spi1_buff[0] = addr;
-	for(uint8_t i = 1; i < 7; i++)
-		tx_spi1_buff[i++] = DUMMY;
+
+
+void GetAxData(void) {
+//	uint8_t addr = OUT_DATA|0x80;
+//	tx_spi1_buff[0] = addr;
+//	for(uint8_t i = 1; i < 7; i++)
+//		tx_spi1_buff[i] = DUMMY;
 	uint8_t ax_addr[7] = {0xA8};//OUT_DATA|0x80 & dummy bytes
 	DMA2_Stream0->M0AR = (uint32_t)(AxData);//memory address
 	DMA2_Stream0->CR |= DMA_SxCR_TCIE;//transfer complete interrupt enable
@@ -90,8 +145,8 @@ void GetAxData(void)
 	DMA2_Stream3->M0AR = (uint32_t)(ax_addr);//memory address
 	DMA2_Stream3->CR |= DMA_SxCR_TCIE;//transfer complete interrupt enable
 	DMA2_Stream3->NDTR = 7;//data size
-	CS_ON();
-	DMA2_Stream0->CR |= DMA_SxCR_EN;//stream enable
+	LIS3DSH_CS_ON();
+  DMA2_Stream0->CR |= DMA_SxCR_EN;//stream enable
 	DMA2_Stream3->CR |= DMA_SxCR_EN;//stream enable
 }
 

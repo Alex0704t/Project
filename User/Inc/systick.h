@@ -12,7 +12,7 @@ void Inc_Tick(void);
 uint32_t Get_Tick(void);
 void delay_ms(uint32_t delay);
 uint8_t Check_delay_ms(uint32_t delay);
-void GPIO_Clock_En(void);
+
 
 #if GFX_USE_OS_RAW32
 systemticks_t gfxSystemTicks(void);

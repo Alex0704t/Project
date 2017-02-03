@@ -20,13 +20,18 @@
 int main(void)
 {
   MCU_Init();
-
-
+  LIS3DSH_Init();
+//  Audio_Init();
+  LIS3DSH_En();
+  MovDetectEN();
   while (1)
   {
 //	  USB_Echo();
 //	  USB_Count(1000);
-	  Main_menu();
+
+      LIS3DSH_View();
+//      Dir_Led();
+//	  Main_menu();
 //	  USB_Ctrl();
 //	  LED_TOGGLE(blue);
 //	  PCF8812_Clear();

@@ -14,7 +14,9 @@
 #define SHORT_PRESS_LIMIT     25
 #define PAST_HOLD_DELAY       -5
 
-
+#ifndef USE_GPIOC
+#define USE_GPIOC
+#endif
 
 enum button
 {

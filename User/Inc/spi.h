@@ -28,6 +28,12 @@ enum {READ = 0,
 
 void SPI1_Init(void);
 void SPI1_DMA_Init(void);
+void WriteSPI1(uint8_t addr, uint8_t *data, uint8_t size);
+void ReadSPI1(uint8_t addr, uint8_t *data, uint8_t size);
+void WriteRegSPI1(uint8_t addr, uint8_t value);
+uint8_t ReadRegSPI1(uint8_t addr);
+void SetRegSPI1(uint8_t addr, uint8_t value);
+uint8_t CheckRegSPI1(uint8_t addr, uint8_t value);
 void GetAxData(void);
 
 

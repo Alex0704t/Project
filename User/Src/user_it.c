@@ -139,11 +139,11 @@ void PendSV_Handler(void)
   * @retval None
   */
 extern void Inc_Tick(void);
-extern void Systick_Blink(void);
+extern void Led_Systick_Blink(void);
 
 void SysTick_Handler(void) {
     Inc_Tick();
-    Systick_Blink();
+    Led_Systick_Blink();
   }
 
 /**
@@ -176,8 +176,7 @@ void OTG_FS_WKUP_IRQHandler(void)
   * @param  None
   * @retval None
   */
-void OTG_FS_IRQHandler(void)
-{
+void OTG_FS_IRQHandler(void) {
   USBD_OTG_ISR_Handler(&USB_OTG_dev);
 }
 
@@ -188,9 +187,8 @@ void EXTI1_IRQHandler(void)
   if(EXTI->PR & EXTI_PR_PR1)
     {
       EXTI->PR |= EXTI_PR_PR1;//clear pending bit of set 1
-      //GetAxData();
-      //Dir_Led();
-
+      GetAxData();
+      Dir_Led();
     }
 }
 
@@ -247,7 +245,7 @@ void DMA2_Stream0_IRQHandler(void)
     DMA2->LIFCR |= DMA_LIFCR_CTCIF0;//clear interrupt flag
     DMA2_Stream0->CR &= ~DMA_SxCR_EN;//stream disable
     DMA2_Stream0->CR &= ~DMA_SxCR_TCIE;//transfer complete interrupt disable
-    CS_OFF();
+//    LIS3DSH_CS_OFF();
   }
 }
 
