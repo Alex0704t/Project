@@ -34,6 +34,7 @@ void WriteRegSPI1(uint8_t addr, uint8_t value);
 uint8_t ReadRegSPI1(uint8_t addr);
 void SetRegSPI1(uint8_t addr, uint8_t value);
 uint8_t CheckRegSPI1(uint8_t addr, uint8_t value);
+void SPI1_DMA_Transfer(uint8_t write, uint8_t addr, uint8_t data, uint16_t size);
 void GetAxData(void);
 
 

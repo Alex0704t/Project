@@ -33,8 +33,8 @@ void LIS3DSH_Int2_Init(void) {
 }
 
 void LIS3DSH_Init(void) {
-	SPI1_Init();
-//	SPI1_DMA_Init();
+//	SPI1_Init();
+	SPI1_DMA_Init();
 	LIS3DSH_CS_Init();
 	LIS3DSH_CS_OFF();
 }

@@ -187,8 +187,8 @@ void EXTI1_IRQHandler(void)
   if(EXTI->PR & EXTI_PR_PR1)
     {
       EXTI->PR |= EXTI_PR_PR1;//clear pending bit of set 1
-      GetAxData();
-      Dir_Led();
+//      GetAxData();
+//      Dir_Led();
     }
 }
 
