@@ -7,11 +7,6 @@
 
 #include "spi.h"
 
-
-uint8_t tx_spi1_buff[SPI1_BUFSIZE] = {0};
-uint8_t rx_spi1_buff[SPI1_BUFSIZE] = {0};
-__IO uint8_t AxData[7];
-
 void SPI1_Init(void) {
 	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
@@ -40,69 +35,70 @@ void SPI1_Init(void) {
 	NVIC_EnableIRQ(SPI1_IRQn);//IRQ handler
 }
 
-void WriteSPI1(uint8_t addr, uint8_t *data, uint8_t size) {
+void LIS3DSH_Write(uint8_t addr, uint8_t *data, uint8_t size) {
   uint8_t temp = 0;
   LIS3DSH_CS_ON();
-  while(!(SPI1->SR & SPI_SR_TXE));
+  while (!(SPI1->SR & SPI_SR_TXE));
   SPI1->DR = addr;
-  while(!(SPI1->SR & SPI_SR_RXNE));
+  while (!(SPI1->SR & SPI_SR_RXNE));
   temp = SPI1->DR;
-  while(size--) {
-    while(!(SPI1->SR & SPI_SR_TXE));
+  while (size--) {
+    while (!(SPI1->SR & SPI_SR_TXE));
     SPI1->DR = *data++;
-    while(!(SPI1->SR & SPI_SR_RXNE));
+    while (!(SPI1->SR & SPI_SR_RXNE));
     temp = SPI1->DR;
   }
   LIS3DSH_CS_OFF();
 }
 
-void ReadSPI1(uint8_t addr, uint8_t *data, uint8_t size) {
+void LIS4DSH_Read(uint8_t addr, uint8_t *data, uint8_t size) {
   uint8_t temp = 0;
   addr |= 0x80;
   LIS3DSH_CS_ON();
-  while(!(SPI1->SR & SPI_SR_TXE));
+  while (!(SPI1->SR & SPI_SR_TXE));
   SPI1->DR = addr;
-  while(!(SPI1->SR & SPI_SR_RXNE));
+  while (!(SPI1->SR & SPI_SR_RXNE));
   temp = SPI1->DR;
-  while(size--) {
-    while(!(SPI1->SR & SPI_SR_TXE));
+  while (size--) {
+    while (!(SPI1->SR & SPI_SR_TXE));
     SPI1->DR = DUMMY;
-    while(!(SPI1->SR & SPI_SR_RXNE));
+    while (!(SPI1->SR & SPI_SR_RXNE));
     *data++ = SPI1->DR;
   }
   LIS3DSH_CS_OFF();
 }
 
-void WriteRegSPI1(uint8_t addr, uint8_t value) {
-  WriteSPI1(addr, &value, 1);
+void LIS3DSH_WriteReg(uint8_t addr, uint8_t value) {
+  LIS3DSH_Write(addr, &value, 1);
 }
 
-uint8_t ReadRegSPI1(uint8_t addr) {
+uint8_t LIS3DSH_ReadReg(uint8_t addr) {
   uint8_t data = 0;
-  ReadSPI1(addr, &data, 1);
+  LIS4DSH_Read(addr, &data, 1);
   return data;
 }
 
-void SetRegSPI1(uint8_t addr, uint8_t value) {
-  uint8_t temp = ReadRegSPI1(addr);
+void LIS3DSH_SetReg(uint8_t addr, uint8_t value) {
+  uint8_t temp = LIS3DSH_ReadReg(addr);
   temp |= value;
-  WriteSPI1(addr, &temp, 1);
+  LIS3DSH_Write(addr, &temp, 1);
 }
 
-uint8_t CheckRegSPI1(uint8_t addr, uint8_t value) {
+uint8_t LIS3DSH_CheckReg(uint8_t addr, uint8_t value) {
   uint8_t data = 0;
-  ReadSPI1(addr, &data, 1);
+  LIS4DSH_Read(addr, &data, 1);
   if (data == value)
     return SET;
   else
     return RESET;
 }
 
-void SPI1_DMA_Init(void)
-{
+void SPI1_DMA_Init(void) {
 	SPI1_Init();
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//DMA2 enable
 	/** SPI1 TX DMA2 Stream_3 channel_3*/
+	DMA2_Stream3->CR = 0;
+	DMA2_Stream3->FCR = 0;
 	DMA2_Stream3->CR |= DMA_SxCR_CHSEL_0|DMA_SxCR_CHSEL_1;//channel3 select
 	DMA2_Stream3->CR |= DMA_SxCR_PL_0|DMA_SxCR_PL_1;//very high priority
 	DMA2_Stream3->CR &= ~(DMA_SxCR_MSIZE|DMA_SxCR_PSIZE);//memory & peripheral data size 1 byte
@@ -110,10 +106,12 @@ void SPI1_DMA_Init(void)
 	DMA2_Stream3->CR |= DMA_SxCR_DIR_0;//memory to peripheral direction
 	DMA2_Stream3->CR |= DMA_SxCR_TCIE;//transfer complete interrupt enable
 	DMA2_Stream3->PAR = (uint32_t)&(SPI1->DR);//peripheral address
-	DMA2_Stream3->M0AR = (uint32_t)(tx_spi1_buff);//memory address
-	DMA2_Stream3->NDTR = SPI1_BUFSIZE;//data size
+//	DMA2_Stream3->M0AR = (uint32_t)(lis3dsh_tx_buf);//memory address
+//	DMA2_Stream3->NDTR = LIS3DSH_BUFSIZE;//data size
 	SPI1->CR2 |= SPI_CR2_TXDMAEN;//Tx buffer DMA enable
 	/** SPI1 RX DMA2 Stream_0 channel_3*/
+	DMA2_Stream0->CR = 0;
+	DMA2_Stream0->FCR = 0;
 	DMA2_Stream0->CR |= DMA_SxCR_CHSEL_0|DMA_SxCR_CHSEL_1;//channel3 select
 	DMA2_Stream0->CR |= DMA_SxCR_PL_0|DMA_SxCR_PL_1;//very high priority
 	DMA2_Stream0->CR &= ~(DMA_SxCR_MSIZE|DMA_SxCR_PSIZE);//memory & peripheral data size 1 byte
@@ -121,8 +119,8 @@ void SPI1_DMA_Init(void)
 	DMA2_Stream0->CR &= ~DMA_SxCR_DIR;//peripheral to memory direction
 	DMA2_Stream0->CR |= DMA_SxCR_TCIE;//transfer complete interrupt enable
 	DMA2_Stream0->PAR = (uint32_t)&(SPI1->DR);//peripheral address
-	DMA2_Stream0->M0AR = (uint32_t)(rx_spi1_buff);//memory address
-	DMA2_Stream0->NDTR = SPI1_BUFSIZE;//data size
+//	DMA2_Stream0->M0AR = (uint32_t)(lis3dsh_rx_buf);//memory address
+//	DMA2_Stream0->NDTR = LIS3DSH_BUFSIZE;//data size
 	SPI1->CR2 |= SPI_CR2_RXDMAEN;//Rx buffer DMA enable
 
 	NVIC_SetPriority(DMA2_Stream3_IRQn, 4);
@@ -131,26 +129,38 @@ void SPI1_DMA_Init(void)
 	NVIC_EnableIRQ(DMA2_Stream0_IRQn);//IRQ handler
 }
 
-void SPI1_DMA_Transfer(uint8_t write, uint8_t addr, uint8_t *data, uint16_t size) {
+__IO uint8_t lis3dsh_data_ready;
+__IO uint8_t lis3dsh_ax_data[LIS3DSH_BUFSIZE];
+uint8_t lis3dsh_tx_dummy[LIS3DSH_BUFSIZE] = {OUT_DATA|0x80, 0, 0, 0, 0, 0, 0};
 
-}
-
-void GetAxData(void) {
-//	uint8_t addr = OUT_DATA|0x80;
-//	tx_spi1_buff[0] = addr;
-//	for(uint8_t i = 1; i < 7; i++)
-//		tx_spi1_buff[i] = DUMMY;
-
-  uint8_t ax_addr[7] = {0xA8};//OUT_DATA|0x80 & dummy bytes
-	DMA2_Stream0->M0AR = (uint32_t)(AxData);//memory address
+void LIS3DSH_GetAxis() {
+	DMA2_Stream0->M0AR = (uint32_t)(lis3dsh_ax_data);//memory address
 	DMA2_Stream0->CR |= DMA_SxCR_TCIE;//transfer complete interrupt enable
-	DMA2_Stream0->NDTR = 7;//data size
-	DMA2_Stream3->M0AR = (uint32_t)(ax_addr);//memory address
+	DMA2_Stream0->NDTR = LIS3DSH_BUFSIZE;//data size
+	DMA2_Stream3->M0AR = (uint32_t)(lis3dsh_tx_dummy);//memory address
 	DMA2_Stream3->CR |= DMA_SxCR_TCIE;//transfer complete interrupt enable
-	DMA2_Stream3->NDTR = 7;//data size
+	DMA2_Stream3->NDTR = LIS3DSH_BUFSIZE;//data size
+	LIS3DSH_ResetFlag();
 	LIS3DSH_CS_ON();
   DMA2_Stream0->CR |= DMA_SxCR_EN;//stream enable
 	DMA2_Stream3->CR |= DMA_SxCR_EN;//stream enable
+}
+
+inline void LIS3DSH_GetData(uint8_t *data) {
+  for(uint8_t i = 1; i < LIS3DSH_BUFSIZE; i++)
+    data[i - 1] = lis3dsh_ax_data[i];
+}
+
+inline void LIS3DSH_SetFlag() {
+  lis3dsh_data_ready = 0;
+}
+
+inline void LIS3DSH_ResetFlag() {
+  lis3dsh_data_ready = 1;
+}
+
+inline void LIS3DSH_WaitFlag() {
+  while (!lis3dsh_data_ready);
 }
 
 extern volatile char PCF8812_buff[PCF8812_BUFSIZ];
@@ -187,22 +197,22 @@ void SPI2_Init(void)
 
 void Send_SPI2_byte(uint8_t data) {
 	PCF8812_SEL();
-	while(!(SPI2->SR & SPI_SR_TXE));
+	while (!(SPI2->SR & SPI_SR_TXE));
 	SPI2->DR = data;
-	while(!(SPI2->SR & SPI_SR_TXE));
-	while((SPI2->SR & SPI_SR_BSY));
+	while (!(SPI2->SR & SPI_SR_TXE));
+	while ((SPI2->SR & SPI_SR_BSY));
 	PCF8812_UNSEL();
 }
 
 void Send_SPI2_data(uint8_t* data, uint16_t length) {
   PCF8812_SEL();
-  while(!(SPI2->SR & SPI_SR_TXE));
-  while(length) {
+  while (!(SPI2->SR & SPI_SR_TXE));
+  while (length) {
     SPI2->DR = *data;
     data++;
     length--;
-    while(!(SPI2->SR & SPI_SR_TXE));
-    while((SPI2->SR & SPI_SR_BSY));
+    while (!(SPI2->SR & SPI_SR_TXE));
+    while ((SPI2->SR & SPI_SR_BSY));
   }
   PCF8812_UNSEL();
 }
@@ -301,7 +311,7 @@ void I2S3_Init(void) {
   RCC->PLLI2SCFGR |= RCC_PLLI2SCFGR_PLLI2SR_1;//PLLI2SR = 2
   RCC->PLLI2SCFGR = (CS43L22_PLLI2S_N << 6)|(CS43L22_PLLI2S_R << 28);//conf. PLLI2S
   RCC->CR |= RCC_CR_PLLI2SON;//PLLI2S ON
-  while(!(RCC->CR & RCC_CR_PLLI2SRDY));//wait PLLI2S ready
+  while (!(RCC->CR & RCC_CR_PLLI2SRDY));//wait PLLI2S ready
 
   SPI3->I2SCFGR &= ~SPI_I2SCFGR_DATLEN;//16-bit data length
   SPI3->I2SCFGR |= SPI_I2SCFGR_I2SCFG_1;//Master transmit

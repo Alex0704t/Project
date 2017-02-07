@@ -9,6 +9,7 @@
 
 extern __IO uint8_t AxData[7];
 axis_s lis3dsh_axis;
+__IO uint8_t lis3dsh_data_ready = 0;
 
 void LIS3DSH_CS_Init(void) {
 /*PE3 chip select for accelerometer*/
@@ -26,7 +27,7 @@ void LIS3DSH_Int2_Init(void) {
 	EXTI->IMR |= EXTI_IMR_MR1;//no mask interrupt EXTI1
 	EXTI->RTSR |= EXTI_RTSR_TR1;//rising trigger event EXTI1
 	SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI1_PE;//EXTI1 source PE1
-	WriteRegSPI1(CTRL_REG3, CTRL_REG3_INT2_EN);//INT2 enable
+	LIS3DSH_WriteReg(CTRL_REG3, CTRL_REG3_INT2_EN);//INT2 enable
 	NVIC_SetPriorityGrouping(4);//4 field for priority group
 	NVIC_SetPriority(EXTI1_IRQn, 4);
 	NVIC_EnableIRQ(EXTI1_IRQn);//IRQ handler
@@ -40,19 +41,19 @@ void LIS3DSH_Init(void) {
 }
 
 void LIS3DSH_En(void) {
-	if (CheckRegSPI1(WHO_I_AM, I_AM_LIS3DSH)) {
+	if (LIS3DSH_CheckReg(WHO_I_AM, I_AM_LIS3DSH)) {
 	  LED_ON(green);
 	  LED_ON(red);
-    delay_ms(300);
+    delay_ms(100);
     LED_OFF(green);
     LED_OFF(red);
 	}
-	WriteRegSPI1(CTRL_REG4, CTRL_REG4_ODR_100|CTRL_REG4_XYZ);
-	WriteRegSPI1(CTRL_REG5, 0x00);//scale 2G
-	if (CheckRegSPI1(CTRL_REG4, CTRL_REG4_ODR_100|CTRL_REG4_XYZ)) {
+	LIS3DSH_WriteReg(CTRL_REG4, CTRL_REG4_ODR_100|CTRL_REG4_XYZ);
+	LIS3DSH_WriteReg(CTRL_REG5, 0x00);//scale 2G
+	if (LIS3DSH_CheckReg(CTRL_REG4, CTRL_REG4_ODR_100|CTRL_REG4_XYZ)) {
     LED_ON(orange);
     LED_ON(blue);
-    delay_ms(300);
+    delay_ms(100);
     LED_OFF(orange);
     LED_OFF(blue);
 	}
@@ -74,11 +75,11 @@ void Dir_Led(void) {
 	int16_t XData = 0;
 	int16_t YData = 0;
 	int16_t ZData = 0;
-//	GetAxData();
+
 //	ReadSPI1(OUT_DATA, AxData, 7);
-	XData = (int16_t) ((AxData[2] << 8) |	AxData[1]);
-	YData = (int16_t) ((AxData[4] << 8) |	AxData[3]);
-	ZData = (int16_t) ((AxData[6] << 8) |	AxData[5]);
+//	XData = (int16_t) ((lis3dsh_ax_data[2] << 8) |	lis3dsh_ax_data[1]);
+//	YData = (int16_t) ((lis3dsh_ax_data[4] << 8) |	lis3dsh_ax_data[3]);
+//	ZData = (int16_t) ((lis3dsh_ax_data[6] << 8) |	lis3dsh_ax_data[5]);
 	if (XData > 800) {
     LED_ON(green);
     LED_OFF(red);
@@ -107,17 +108,18 @@ void Dir_Led(void) {
 
 void MovDetectEN(void) {
 	LIS3DSH_Int2_Init();//enable EXTI1 interrupt
-	WriteRegSPI1(CTRL_REG1, CTRL_REG1_SM1_EN|CTRL_REG1_SM1_PIN);//SM1 enable, interrupt INT2 pin
-	WriteRegSPI1(CTRL_REG3, CTRL_REG3_INT2_EN|CTRL_REG3_IEA);//INT2 enable, active HIGH
-	WriteRegSPI1(CTRL_REG4, CTRL_REG4_XYZ|CTRL_REG4_ODR_100);//100 Hz 3-axes enable
-	WriteRegSPI1(CTRL_REG5, 0x00);//scale 2G
-	WriteRegSPI1(THRS1_1, 0x55);//threshold value
-	WriteRegSPI1(ST1_1, GNTH1);//axes grater then threshold 1
-	WriteRegSPI1(ST2_1, CONT);//Continues execution from RESET-	POINT
-	WriteRegSPI1(MASK1_B, MASK_XY);//enable x, y
-	WriteRegSPI1(MASK1_A, MASK_XY);//enable x, y
-	WriteRegSPI1(SETT1, SETT_SITR);//enable CONT command
+	LIS3DSH_WriteReg(CTRL_REG1, CTRL_REG1_SM1_EN|CTRL_REG1_SM1_PIN);//SM1 enable, interrupt INT2 pin
+	LIS3DSH_WriteReg(CTRL_REG3, CTRL_REG3_INT2_EN|CTRL_REG3_IEA);//INT2 enable, active HIGH
+	LIS3DSH_WriteReg(CTRL_REG4, CTRL_REG4_XYZ|CTRL_REG4_ODR_100);//100 Hz 3-axes enable
+	LIS3DSH_WriteReg(CTRL_REG5, 0x00);//scale 2G
+	LIS3DSH_WriteReg(THRS1_1, 0x55);//threshold value
+	LIS3DSH_WriteReg(ST1_1, GNTH1);//axes grater then threshold 1
+	LIS3DSH_WriteReg(ST2_1, CONT);//Continues execution from RESET-	POINT
+	LIS3DSH_WriteReg(MASK1_B, MASK_XY);//enable x, y
+	LIS3DSH_WriteReg(MASK1_A, MASK_XY);//enable x, y
+	LIS3DSH_WriteReg(SETT1, SETT_SITR);//enable CONT command
 }
+
 
 
 void LIS3DSH_View() {
@@ -129,8 +131,10 @@ void LIS3DSH_View() {
       PCF8812_Clear();
       PCF8812_Title("LIS3DSH");
 #if 1
-      GetAxData();
-      temp = LIS3DSH_Decode(AxData[1], 3);
+      LIS3DSH_GetAxis();
+      LIS3DSH_WaitFlag();
+      LIS3DSH_GetData(data);
+      temp = LIS3DSH_Decode(data, 3);
 #else
       ReadSPI1(OUT_DATA, data, 6);
       temp = LIS3DSH_Decode(data, 3);

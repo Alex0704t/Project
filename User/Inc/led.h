@@ -4,6 +4,10 @@
 //#include "../Device/stm32f4xx.h"
 #include "user.h"
 
+#ifndef PWM_LED_CONTROL
+#define PWM_LED_CONTROL
+#endif
+
 #ifdef PWM_LED_CONTROL
 
 #define LED_ON(led)       do\

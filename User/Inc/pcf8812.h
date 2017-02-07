@@ -73,7 +73,7 @@
 
 
 #define PCF8812_VIEW_VAR(var, line) {uint8_t s[PCF8812_STR_SIZ];\
-                                snprintf(s, PCF8812_STR_SIZ, #var ":%d", var);\
+                                snprintf(s, PCF8812_STR_SIZ, #var ":%ld", var);\
                                 PCF8812_Putline(s, line);}
 
 volatile char PCF8812_buff[PCF8812_BUFSIZ];

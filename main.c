@@ -23,16 +23,19 @@ int main(void)
   LIS3DSH_Init();
 //  Audio_Init();
   LIS3DSH_En();
-  MovDetectEN();
+//  MovDetectEN();
+
   while (1)
   {
-//	  USB_Echo();
-//	  USB_Count(1000);
+//      delay_ms(5000);
+//      RESET_BLINK(blue);
 
+//      MovDetectEN();
+//      GetAxData();
       LIS3DSH_View();
 //      Dir_Led();
 //	  Main_menu();
-//	  USB_Ctrl();
+
 //	  LED_TOGGLE(blue);
 //	  PCF8812_Clear();
 //	  while(1);

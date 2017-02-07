@@ -4,7 +4,7 @@ __IO uint32_t Tick;
 
 void Clock_Init(void) {
   RCC->CR |= 	RCC_CR_HSEON;//HSE on
-  while(!(RCC->CR & RCC_CR_HSERDY));//HSE wait
+  while (!(RCC->CR & RCC_CR_HSERDY));//HSE wait
   RCC->CFGR &=	~RCC_CFGR_SW;//clear SW bits
   RCC->CFGR |=  RCC_CFGR_SW_HSE;//switch to HSE
   RCC->CR |= RCC_CR_CSSON;//CSS on
@@ -21,13 +21,12 @@ void Clock_Init(void) {
   FLASH->ACR &= ~FLASH_ACR_LATENCY;//clear
   FLASH->ACR |= FLASH_ACR_LATENCY_5WS;//set flash latency
   RCC->CR |= 	RCC_CR_PLLON;//PLL on
-  while(!(RCC->CR & RCC_CR_PLLRDY));//PLL wait
+  while (!(RCC->CR & RCC_CR_PLLRDY));//PLL wait
   RCC->CFGR &= ~RCC_CFGR_SW;//clear SW bits
   RCC->CFGR |= RCC_CFGR_SW_PLL;//switch to PLL
-  while((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL);//wait PLL switch status
-  //SystemCoreClockUpdate();//get SystemCoreClock value
-  //SysTick_Config(SystemCoreClock/1000);//systick interrupt each 1 ms
-  SysTick_Config(168000 - 1);//systick interrupt each 1 ms
+  while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL);//wait PLL switch status
+//  SystemCoreClockUpdate();//get SystemCoreClock value
+  SysTick_Config(SystemCoreClock/1000);//systick interrupt each 1 ms
 
   NVIC_SetPriorityGrouping(4);//4 field for priority group
 }
@@ -45,14 +44,14 @@ uint32_t Get_Tick(void) {
 void delay_ms(uint32_t delay) {
   uint32_t tickstart = 0;
   tickstart = Get_Tick();
-  while((Get_Tick() - tickstart) < delay);
+  while ((Get_Tick() - tickstart) < delay);
 }
 
 uint8_t Check_delay_ms(uint32_t delay) {
   static uint32_t tickstart = 0;
-  if(!tickstart)
+  if (!tickstart)
     tickstart = Get_Tick();
-  if((Get_Tick() - tickstart) < delay)
+  if ((Get_Tick() - tickstart) < delay)
     return 0;
   else {
     tickstart = 0;

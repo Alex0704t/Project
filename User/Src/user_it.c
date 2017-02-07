@@ -187,6 +187,8 @@ void EXTI1_IRQHandler(void)
   if(EXTI->PR & EXTI_PR_PR1)
     {
       EXTI->PR |= EXTI_PR_PR1;//clear pending bit of set 1
+//      Led_Blink(blue, 500, 250);
+
 //      GetAxData();
 //      Dir_Led();
     }
@@ -228,31 +230,29 @@ void SPI1_IRQHandler(void)
   }
 }
 
-void DMA2_Stream3_IRQHandler(void)
-{
-  if(DMA2->LISR & DMA_LISR_TCIF3)//check transfer complete
-  {
+void DMA2_Stream3_IRQHandler(void) {
+  if(DMA2->LISR & DMA_LISR_TCIF3) {//check transfer complete
     DMA2->LIFCR |= DMA_LIFCR_CTCIF3;//clear interrupt flag
     DMA2_Stream3->CR &= ~DMA_SxCR_EN;//stream disable
     DMA2_Stream3->CR &= ~DMA_SxCR_TCIE;//transfer complete interrupt disable
   }
 }
 
-void DMA2_Stream0_IRQHandler(void)
-{
-  if(DMA2->LISR & DMA_LISR_TCIF0)//check transfer complete
-  {
+
+void DMA2_Stream0_IRQHandler(void) {
+  if(DMA2->LISR & DMA_LISR_TCIF0) {//check transfer complete
     DMA2->LIFCR |= DMA_LIFCR_CTCIF0;//clear interrupt flag
     DMA2_Stream0->CR &= ~DMA_SxCR_EN;//stream disable
     DMA2_Stream0->CR &= ~DMA_SxCR_TCIE;//transfer complete interrupt disable
-//    LIS3DSH_CS_OFF();
+//    MovDetectEN();
+//    LIS3DSH_View();
+    LIS3DSH_CS_OFF();
+    LIS3DSH_SetFlag();
   }
 }
 
-void SPI2_IRQHandler(void)
-{
-  if(SPI2->SR & SPI_SR_TXE)
-  {
+void SPI2_IRQHandler(void) {
+  if (SPI2->SR & SPI_SR_TXE) {
 
   }
 }
