@@ -22,8 +22,8 @@ int main(void)
   MCU_Init();
   LIS3DSH_Init();
 //  Audio_Init();
-  LIS3DSH_En();
-//  MovDetectEN();
+  LIS3DSH_En(SCALE_2G, ODR_100Hz);
+//  LIS3DSH_MovDetEn(SCALE_2G, ODR_100Hz);
 
   while (1)
   {

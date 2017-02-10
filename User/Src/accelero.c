@@ -7,9 +7,9 @@
 
 #include "accelero.h"
 
-extern __IO uint8_t AxData[7];
-axis_s lis3dsh_axis;
+//axis_s lis3dsh_axis;
 __IO uint8_t lis3dsh_data_ready = 0;
+extern uint8_t  SPI1_DMA_mode_flag;
 
 void LIS3DSH_CS_Init(void) {
 /*PE3 chip select for accelerometer*/
@@ -28,6 +28,7 @@ void LIS3DSH_Int2_Init(void) {
 	EXTI->RTSR |= EXTI_RTSR_TR1;//rising trigger event EXTI1
 	SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI1_PE;//EXTI1 source PE1
 	LIS3DSH_WriteReg(CTRL_REG3, CTRL_REG3_INT2_EN);//INT2 enable
+	SPI1_DMA_mode_flag |= SPI1_DMA_LIS3DSH|SPI1_DMA_LIS3DSH_INT2;//
 	NVIC_SetPriorityGrouping(4);//4 field for priority group
 	NVIC_SetPriority(EXTI1_IRQn, 4);
 	NVIC_EnableIRQ(EXTI1_IRQn);//IRQ handler
@@ -40,51 +41,44 @@ void LIS3DSH_Init(void) {
 	LIS3DSH_CS_OFF();
 }
 
-void LIS3DSH_En(void) {
+void LIS3DSH_En(lis3dsh_scale scale, lis3dsh_data_rate rate) {
 	if (LIS3DSH_CheckReg(WHO_I_AM, I_AM_LIS3DSH)) {
 	  LED_ON(green);
 	  LED_ON(red);
-    delay_ms(100);
+    delay_ms(50);
     LED_OFF(green);
     LED_OFF(red);
 	}
-	LIS3DSH_WriteReg(CTRL_REG4, CTRL_REG4_ODR_100|CTRL_REG4_XYZ);
-	LIS3DSH_WriteReg(CTRL_REG5, 0x00);//scale 2G
-	if (LIS3DSH_CheckReg(CTRL_REG4, CTRL_REG4_ODR_100|CTRL_REG4_XYZ)) {
+	LIS3DSH_ModReg(CTRL_REG4, CTRL_REG4_ODR_MASK, CTRL_REG4_AXIS|rate);//output data rate
+	LIS3DSH_ModReg(CTRL_REG5, CTRL_REG5_FSCALE_MASK, scale);//set scale
+	if (LIS3DSH_CheckReg(CTRL_REG4, rate|CTRL_REG4_AXIS)) {
     LED_ON(orange);
     LED_ON(blue);
-    delay_ms(100);
+    delay_ms(50);
     LED_OFF(orange);
     LED_OFF(blue);
 	}
+
 }
 
-axis_s LIS3DSH_Decode(uint8_t *data, uint8_t axis_num) {
+axis_s LIS3DSH_Decode(uint8_t *data) {
   axis_s res = {};
   res.x = (int16_t) (((uint16_t)data[1] << 8) | (uint16_t)data[0]);
   res.y = (int16_t) (((uint16_t)data[3] << 8) | (uint16_t)data[2]);
-  if (axis_num > 2)
-    res.z = (int16_t) (((uint16_t)data[5] << 8) | (uint16_t)data[4]);
-  else
-    res.z = 0;
+#ifndef USE_2AXIS
+  res.z = (int16_t) (((uint16_t)data[5] << 8) | (uint16_t)data[4]);
+#else
+  res.z = 0;
+#endif
   return res;
 }
 
-void Dir_Led(void) {
-	//uint8_t temp;
-	int16_t XData = 0;
-	int16_t YData = 0;
-	int16_t ZData = 0;
-
-//	ReadSPI1(OUT_DATA, AxData, 7);
-//	XData = (int16_t) ((lis3dsh_ax_data[2] << 8) |	lis3dsh_ax_data[1]);
-//	YData = (int16_t) ((lis3dsh_ax_data[4] << 8) |	lis3dsh_ax_data[3]);
-//	ZData = (int16_t) ((lis3dsh_ax_data[6] << 8) |	lis3dsh_ax_data[5]);
-	if (XData > 800) {
+void LIS3DSH_Led(const axis_s *in, int32_t threshold) {
+	if (in->x > threshold) {
     LED_ON(green);
     LED_OFF(red);
 	}
-	else if (XData < -800) {
+	else if (in->x < -threshold) {
     LED_OFF(green);
     LED_ON(red);
 	}
@@ -92,11 +86,11 @@ void Dir_Led(void) {
     LED_OFF(green);
     LED_OFF(red);
 	}
-	if (YData > 800) {
+	if (in->y > threshold) {
     LED_OFF(orange);
     LED_ON(blue);
 	}
-	else if (YData < -800) {
+	else if (in->y < -threshold) {
     LED_ON(orange);
     LED_OFF(blue);
 	}
@@ -106,27 +100,24 @@ void Dir_Led(void) {
 	}
 }
 
-void MovDetectEN(void) {
-	LIS3DSH_Int2_Init();//enable EXTI1 interrupt
+void LIS3DSH_MovDetEn(lis3dsh_scale scale, lis3dsh_data_rate rate) {
 	LIS3DSH_WriteReg(CTRL_REG1, CTRL_REG1_SM1_EN|CTRL_REG1_SM1_PIN);//SM1 enable, interrupt INT2 pin
 	LIS3DSH_WriteReg(CTRL_REG3, CTRL_REG3_INT2_EN|CTRL_REG3_IEA);//INT2 enable, active HIGH
-	LIS3DSH_WriteReg(CTRL_REG4, CTRL_REG4_XYZ|CTRL_REG4_ODR_100);//100 Hz 3-axes enable
-	LIS3DSH_WriteReg(CTRL_REG5, 0x00);//scale 2G
+	LIS3DSH_ModReg(CTRL_REG4, CTRL_REG4_ODR_MASK, CTRL_REG4_AXIS|rate);//output data rate
+	LIS3DSH_ModReg(CTRL_REG5, CTRL_REG5_FSCALE_MASK, scale);//set scale
 	LIS3DSH_WriteReg(THRS1_1, 0x55);//threshold value
 	LIS3DSH_WriteReg(ST1_1, GNTH1);//axes grater then threshold 1
 	LIS3DSH_WriteReg(ST2_1, CONT);//Continues execution from RESET-	POINT
 	LIS3DSH_WriteReg(MASK1_B, MASK_XY);//enable x, y
 	LIS3DSH_WriteReg(MASK1_A, MASK_XY);//enable x, y
 	LIS3DSH_WriteReg(SETT1, SETT_SITR);//enable CONT command
+	LIS3DSH_Int2_Init();//enable EXTI1 interrupt
 }
-
-
 
 void LIS3DSH_View() {
   uint8_t data[6];
   axis_s temp = {};
   Button_Set_Name(user_button, "EXIT");
-
   while(1) {
       PCF8812_Clear();
       PCF8812_Title("LIS3DSH");
@@ -134,43 +125,32 @@ void LIS3DSH_View() {
       LIS3DSH_GetAxis();
       LIS3DSH_WaitFlag();
       LIS3DSH_GetData(data);
-      temp = LIS3DSH_Decode(data, 3);
 #else
-      ReadSPI1(OUT_DATA, data, 6);
-      temp = LIS3DSH_Decode(data, 3);
+      LIS3DSH_Read(OUT_DATA, data, 6);
 #endif
+      temp = LIS3DSH_Decode(data);
       PCF8812_SValue("X ", temp.x, "", 2);
       PCF8812_SValue("Y ", temp.y, "", 3);
       PCF8812_SValue("Z ", temp.z, "", 4);
 
-      if (temp.x > 800) {
-        LED_ON(green);
-        LED_OFF(red);
-      }
-      else if (temp.x < -800) {
-        LED_OFF(green);
-        LED_ON(red);
-      }
-      else {
-        LED_OFF(green);
-        LED_OFF(red);
-      }
-      if (temp.y > 800) {
-        LED_OFF(orange);
-        LED_ON(blue);
-      }
-      else if (temp.y < -800) {
-        LED_ON(orange);
-        LED_OFF(blue);
-      }
-      else {
-        LED_OFF(orange);
-        LED_OFF(blue);
-      }
+      LIS3DSH_Led(&temp, 800);
 
-      delay_ms(330);
+      delay_ms(220);
       if(Button_Get(user_button))
         return;
       PCF8812_DELAY;
     }
+}
+/**
+  * @brief  This function handles data received via DMA past LIS3DSH interrupt
+  * @param  None
+  * @retval None
+  */
+void LIS3DSH_IntHandler() {
+  uint8_t data[6];
+  axis_s temp = {};
+  LIS3DSH_GetData(data);
+  temp = LIS3DSH_Decode(data);
+  LIS3DSH_Led(&temp, 600);
+  LIS3DSH_MovDetEn(SCALE_2G, ODR_100Hz);
 }

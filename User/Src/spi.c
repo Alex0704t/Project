@@ -51,7 +51,7 @@ void LIS3DSH_Write(uint8_t addr, uint8_t *data, uint8_t size) {
   LIS3DSH_CS_OFF();
 }
 
-void LIS4DSH_Read(uint8_t addr, uint8_t *data, uint8_t size) {
+void LIS3DSH_Read(uint8_t addr, uint8_t *data, uint8_t size) {
   uint8_t temp = 0;
   addr |= 0x80;
   LIS3DSH_CS_ON();
@@ -74,7 +74,7 @@ void LIS3DSH_WriteReg(uint8_t addr, uint8_t value) {
 
 uint8_t LIS3DSH_ReadReg(uint8_t addr) {
   uint8_t data = 0;
-  LIS4DSH_Read(addr, &data, 1);
+  LIS3DSH_Read(addr, &data, 1);
   return data;
 }
 
@@ -84,14 +84,29 @@ void LIS3DSH_SetReg(uint8_t addr, uint8_t value) {
   LIS3DSH_Write(addr, &temp, 1);
 }
 
+void LIS3DSH_ClearReg(uint8_t addr, uint8_t value) {
+  uint8_t temp = LIS3DSH_ReadReg(addr);
+  temp &= ~value;
+  LIS3DSH_Write(addr, &temp, 1);
+}
+
+void LIS3DSH_ModReg(uint8_t addr, uint8_t mask, uint8_t value) {
+  uint8_t temp = LIS3DSH_ReadReg(addr);
+  temp &= ~mask;
+  temp |= value;
+  LIS3DSH_Write(addr, &temp, 1);
+}
+
 uint8_t LIS3DSH_CheckReg(uint8_t addr, uint8_t value) {
   uint8_t data = 0;
-  LIS4DSH_Read(addr, &data, 1);
-  if (data == value)
+  LIS3DSH_Read(addr, &data, 1);
+  if ((data & value) == value)
     return SET;
   else
     return RESET;
 }
+
+extern uint8_t  SPI1_DMA_mode_flag;
 
 void SPI1_DMA_Init(void) {
 	SPI1_Init();
@@ -127,6 +142,7 @@ void SPI1_DMA_Init(void) {
 	NVIC_EnableIRQ(DMA2_Stream3_IRQn);//IRQ handler
 	NVIC_SetPriority(DMA2_Stream0_IRQn, 4);
 	NVIC_EnableIRQ(DMA2_Stream0_IRQn);//IRQ handler
+
 }
 
 __IO uint8_t lis3dsh_data_ready;
@@ -140,6 +156,8 @@ void LIS3DSH_GetAxis() {
 	DMA2_Stream3->M0AR = (uint32_t)(lis3dsh_tx_dummy);//memory address
 	DMA2_Stream3->CR |= DMA_SxCR_TCIE;//transfer complete interrupt enable
 	DMA2_Stream3->NDTR = LIS3DSH_BUFSIZE;//data size
+	if ((SPI1_DMA_mode_flag & SPI1_DMA_LIS3DSH) != SPI1_DMA_LIS3DSH)
+	  SPI1_DMA_mode_flag |= SPI1_DMA_LIS3DSH;//
 	LIS3DSH_ResetFlag();
 	LIS3DSH_CS_ON();
   DMA2_Stream0->CR |= DMA_SxCR_EN;//stream enable
@@ -147,7 +165,7 @@ void LIS3DSH_GetAxis() {
 }
 
 inline void LIS3DSH_GetData(uint8_t *data) {
-  for(uint8_t i = 1; i < LIS3DSH_BUFSIZE; i++)
+  for (uint8_t i = 1; i < LIS3DSH_BUFSIZE; i++)
     data[i - 1] = lis3dsh_ax_data[i];
 }
 
