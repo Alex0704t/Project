@@ -290,7 +290,7 @@ void PCF8812_FValue(char* name, double value, char* unit, uint8_t line) {
 
 #else
 
-//char *  _EXFUN(gcvt,(double,int,char *));
+char *  _EXFUN(gcvt,(double,int,char *));
 //char *  _EXFUN(gcvtf,(float,int,char *));
 //char *  _EXFUN(fcvt,(double,int,int *,int *));
 //char *  _EXFUN(fcvtf,(float,int,int *,int *));
@@ -427,30 +427,26 @@ void PCF8812_Line(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2) {
   uint8_t swap_xy = 0;
   len_x = (x1 > x2) ? x1 - x2 : x2 - x1;
   len_y = (y1 > y2) ? y1 - y2 : y2 - y1;
-  if (len_y > len_x)
-  {
+  if (len_y > len_x) {
     swap_xy = 1;
     SWAP(uint8_t, len_x, len_y);
     SWAP(uint8_t, x1, y1);
     SWAP(uint8_t, x2, y2);
   }
-  if (x1 > x2)
-  {
+  if (x1 > x2) {
     SWAP(uint8_t, x1, x2);
     SWAP(uint8_t, y1, y2);
   }
   err = len_x / 2;
   ystep = (y2 > y1) ? 1 : -1;
   y = y1;
-  for(x = x1; x <= x2; x++)
-  {
+  for (x = x1; x <= x2; x++) {
     if (swap_xy == 0)
       PCF8812_Set_bit(x, y);
     else
       PCF8812_Set_bit(y, x);
     err -= (uint8_t)len_y;
-    if (err < 0)
-    {
+    if (err < 0) {
       y += (uint8_t)ystep;
       err += (uint8_t)len_x;
     }
@@ -458,24 +454,21 @@ void PCF8812_Line(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2) {
 }
 
 void PCF8812_Rect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t fill) {
-  if(fill == empty)
-  {
+  if (fill == empty) {
   PCF8812_Line(x1, y1, x2, y1);
   PCF8812_Line(x2, y1, x2, y2);
   PCF8812_Line(x2, y2, x1, y2);
   PCF8812_Line(x1, y2, x1, y1);
   }
-  else
-  {
-    if(x1 > x2)
+  else {
+    if (x1 > x2)
       SWAP(uint8_t, x1, x2);
-    if(y1 > y2)
+    if (y1 > y2)
       SWAP(uint8_t, y1, y2);
-    for(uint8_t i = y1; i <= y2; i++)
-      for(uint8_t j = x1; j <= x2; j++)
-        {
-          PCF8812_Set_bit(j, i);
-        }
+    for (uint8_t i = y1; i <= y2; i++)
+      for (uint8_t j = x1; j <= x2; j++) {
+        PCF8812_Set_bit(j, i);
+      }
   }
 }
 
@@ -496,8 +489,7 @@ void PCF8812_Option(char* option, uint8_t line) {
 }
 
 void PCF8812_Cursor(uint8_t line) {
-  if(line < 1 || line > 6)
-    {
+  if (line < 1 || line > 6) {
     PCF8812_Error("cursor out");
     return;
     }
@@ -509,8 +501,7 @@ void PCF8812_Butt_name(uint8_t button, char* name) {
   uint8_t len = 0, start = 0;
   len = strlen(name);
   len = (len > 5) ? 5 : len;
-  switch(button)
-  {
+  switch (button) {
     case button_1:
       start = 0;
       break;
@@ -523,13 +514,12 @@ void PCF8812_Butt_name(uint8_t button, char* name) {
     default:
       break;
   }
-  for(uint8_t i = start; i < (start + len); i++)
+  for (uint8_t i = start; i < (start + len); i++)
       PCF8812_Set_Char(*name++, 7, i);
 }
 
 void PCF8812_Butt_ind(uint8_t button) {
-  switch(button)
-  {
+  switch (button) {
     case button_1:
       PCF8812_Inv_Char(7, 0);
       PCF8812_Inv_Char(7, 1);
@@ -558,7 +548,7 @@ void PCF8812_Butt_ind(uint8_t button) {
 
 uint32_t PCF8812_Input_Int(char* name, uint32_t min, uint32_t max) {
   char str[PCF8812_STR_SIZ];
-  if(max < min)
+  if (max < min)
     SWAP(uint32_t, min, max);
   uint32_t result = 0;
   uint8_t n_dig = 0;//number of digits
@@ -570,42 +560,37 @@ uint32_t PCF8812_Input_Int(char* name, uint32_t min, uint32_t max) {
   Button_Set_Name(user_button, "OK");
   Button_Set_Name(button_1, " <");
   Button_Set_Name(button_2, "> ");
-  while(1)
-  {
-  PCF8812_Clear();
-  PCF8812_Title(name);
-  //view value
-  sprintf(str, "%.*s%.*u%.*s", (PCF8812_LCD_LINE - n_dig)/2, EMPTY_STR, n_dig, result, \
-                               (PCF8812_LCD_LINE - n_dig)/2 + (PCF8812_LCD_LINE - n_dig)%2, EMPTY_STR);
-  PCF8812_Putline(str, 3);
-  //view selected digit
-  PCF8812_Set_Symb(corner_up, 2, (PCF8812_LCD_LINE - n_dig)/2 + n_dig - col);
-  PCF8812_Set_Symb(corner_down, 4, (PCF8812_LCD_LINE - n_dig)/2 + n_dig - col);
-  if(Button_Get(button_1))//move the input field to the left
-    {
+  while (1) {
+    PCF8812_Clear();
+    PCF8812_Title(name);
+    //view value
+    sprintf(str, "%.*s%.*u%.*s", (PCF8812_LCD_LINE - n_dig)/2, EMPTY_STR, n_dig, result, \
+                                 (PCF8812_LCD_LINE - n_dig)/2 + (PCF8812_LCD_LINE - n_dig)%2, EMPTY_STR);
+    PCF8812_Putline(str, 3);
+    //view selected digit
+    PCF8812_Set_Symb(corner_up, 2, (PCF8812_LCD_LINE - n_dig)/2 + n_dig - col);
+    PCF8812_Set_Symb(corner_down, 4, (PCF8812_LCD_LINE - n_dig)/2 + n_dig - col);
+    if (Button_Get(button_1)) {//move the input field to the left
       //increase to the maximum and return to a minimum
       mul = (mul < max_mul) ? (mul * 10) : 1;//
       col = (col < n_dig) ? (col + 1) : 1;
     }
-  if(Button_Get(button_2))//move the input field to the right
-    {
+    if (Button_Get(button_2)) {//move the input field to the right
       //decrease to the minimum and return to a maximum
       mul = (mul > 1) ? (mul / 10) : max_mul;
       col = (col > 1) ? (col - 1) : n_dig;
     }
-  if(Button_Get(user_button))//return result
-    {
+    if (Button_Get(user_button)) {//return result
       PCF8812_Clear();
       return (result < min) ? min : result;//min limit of value
     }
-  int8_t diff = Get_Enc_Diff();//read change of encoder position
-  if(diff)//set result value
-    {
+    int8_t diff = Get_Enc_Diff();//read change of encoder position
+    if (diff) {//set result value
       result += (mul * diff);
       diff = 0;
       result = (result > max) ? max : result;//max limit of value
     }
-  PCF8812_DELAY;
+    PCF8812_DELAY;
   }
 }
 
@@ -614,20 +599,19 @@ uint32_t PCF8812_Set_Param(Par_list* list) {
   Button_Set_Name(user_button, "OK");
   Button_Set_Name(button_1, "DOWN");
   Button_Set_Name(button_2, "UP");
-  for(;;)
-    {
-      PCF8812_Clear();
-      PCF8812_Title(list->name);
-      uint8_t i = Get_Enc_Count(list->num - 1);
-      if(Button_Get(button_1))
-        DECR_ENC(1);
-      if(Button_Get(button_2))
-        INCR_ENC(1);
-      if(Button_Get(user_button))//return result
-        return list->item[i].code;
-      PCF8812_Putline_Center(list->item[i].name, 4);
-      PCF8812_DELAY;
-    }
+  for (;;) {
+    PCF8812_Clear();
+    PCF8812_Title(list->name);
+    uint8_t i = Get_Enc_Count(list->num - 1);
+    if (Button_Get(button_1))
+      DECR_ENC(1);
+    if (Button_Get(button_2))
+      INCR_ENC(1);
+    if (Button_Get(user_button))//return result
+      return list->item[i].code;
+    PCF8812_Putline_Center(list->item[i].name, 4);
+    PCF8812_DELAY;
+  }
   return 0;
 }
 
@@ -643,8 +627,7 @@ void PCF8812_Input_Time() {
   Button_Set_Name(user_button, "OK");
   Button_Set_Name(button_1, " <");
   Button_Set_Name(button_2, "> ");
-  for(;;)
-    {
+  for(;;) {
     PCF8812_Clear();
     PCF8812_Putline_Center("SET DATE & TIME", 0);
     Get_Time_String(&temp, str, view_all);
@@ -653,29 +636,25 @@ void PCF8812_Input_Time() {
     //view selected digit
     PCF8812_Set_Symb(corner_up, 2, col);
     PCF8812_Set_Symb(corner_down, 4, col);
-    if(Button_Get(button_1))
-      {
-        col--;//move the input field to the left
-        if(col % 3 == 2)//jump across separator
-          col--;
-        if(col < 0)//move on circle
-          col = PCF8812_LCD_LINE - 1;
-      }
-    if(Button_Get(button_2))
-      {
-        col++;//move the input field to the right
-        if(col % 3 == 2)//jump across separator
-          col++;
-        if(col > PCF8812_LCD_LINE - 1)//move on circle
-          col = 0;
-      }
-    if(Button_Get(user_button))//set time
-      {
-        Set_Time(&temp);//set time
-        return;
-      }
-    switch(col)
-    {
+    if (Button_Get(button_1)) {
+      col--;//move the input field to the left
+      if(col % 3 == 2)//jump across separator
+        col--;
+      if(col < 0)//move on circle
+        col = PCF8812_LCD_LINE - 1;
+    }
+    if (Button_Get(button_2)) {
+      col++;//move the input field to the right
+      if (col % 3 == 2)//jump across separator
+        col++;
+      if (col > PCF8812_LCD_LINE - 1)//move on circle
+        col = 0;
+    }
+    if (Button_Get(user_button)) {//set time
+      Set_Time(&temp);//set time
+      return;
+    }
+    switch (col) {
       case 0: case 1://change date
         ptr = &temp.date;//set pointer to changed data
         //set limits for changed data
@@ -725,7 +704,7 @@ void PCF8812_Input_Time() {
            (*ptr < min) ? max :
             *ptr;
     PCF8812_DELAY;
-    }
+  }
 }
 
 uint32_t PCF8812_Counter = PCF8812_COUNT_MAX;
@@ -741,7 +720,7 @@ void PCF8812_Off() {
 }
 
 void PCF8812_Count() {
-  if(PCF8812_Counter)
+  if (PCF8812_Counter)
       PCF8812_Counter--;
   else
       PCF8812_Off();

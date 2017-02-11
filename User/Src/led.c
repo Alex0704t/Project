@@ -110,13 +110,13 @@ void Led_Systick_Blink(void) {
 
 void Led_Blink(uint8_t led, uint16_t on_time, uint16_t off_time) {
   uint8_t i, m, n;
-  if(led == led_all) {
+  if (led == led_all) {
     m = green;
     n = blue;
   }
   else
     m = n = led;
-  for(i = m; i <= n; i++) {
+  for (i = m; i <= n; i++) {
     led_flag[i - 1] = 0;
     led_count[i - 1] = 0;
     led_time[i - 1][0] = on_time;

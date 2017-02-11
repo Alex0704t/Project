@@ -73,6 +73,7 @@ axis_s LIS3DSH_Decode(uint8_t *data) {
   return res;
 }
 
+/** ToDo fixed incorrect axe Z value in 16G mode */
 real_axis_s LIS3DSH_Convert(axis_s *data, lis3dsh_scale scale) {
   real_axis_s res = {};
   float f_scale = (scale == SCALE_2G)  ? (2.0  / INT16_MAX) :
@@ -147,9 +148,32 @@ void LIS3DSH_View() {
       PCF8812_FValue("Y ", res.y, " G", 2);
       PCF8812_FValue("Z ", res.z, " G", 3);
 
-      PCF8812_HValue("HEX ", (uint16_t) (((uint16_t)data[1] << 8) | (uint16_t)data[0])/*, " G"*/, 5);
+      uint16_t threshold = 500;
+      if (temp.x > threshold) {
+        PCF8812_Set_Symb(blank, 5, 9);
+        PCF8812_Set_Symb(arrow_left, 5, 7);
+      }
+      else if (temp.x < -threshold) {
+        PCF8812_Set_Symb(arrow_right, 5, 9);
+        PCF8812_Set_Symb(blank, 5, 7);
+      }
+      else {
+        PCF8812_Set_Symb(blank, 5, 9);
+        PCF8812_Set_Symb(blank, 5, 7);
+      }
+      if (temp.y > threshold) {
+        PCF8812_Set_Symb(arrow_down, 6, 8);
+        PCF8812_Set_Symb(blank, 4, 8);
+      }
+      else if (temp.y < -threshold) {
+        PCF8812_Set_Symb(blank, 6, 8);
+        PCF8812_Set_Symb(arrow_up, 4, 8);
+      }
+      else {
+        PCF8812_Set_Symb(blank, 6, 8);
+        PCF8812_Set_Symb(blank, 4, 8);
+      }
 
-      LIS3DSH_Led(&temp, 800);
 
       delay_ms(300);
       if(Button_Get(user_button))
