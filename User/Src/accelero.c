@@ -73,6 +73,19 @@ axis_s LIS3DSH_Decode(uint8_t *data) {
   return res;
 }
 
+real_axis_s LIS3DSH_Convert(axis_s *data, lis3dsh_scale scale) {
+  real_axis_s res = {};
+  float f_scale = (scale == SCALE_2G)  ? (2.0  / INT16_MAX) :
+                  (scale == SCALE_4G)  ? (4.0  / INT16_MAX) :
+                  (scale == SCALE_6G)  ? (6.0  / INT16_MAX) :
+                  (scale == SCALE_8G)  ? (8.0  / INT16_MAX) :
+                  (scale == SCALE_16G) ? (16.0 / INT16_MAX) : 0;
+  res.x = data->x * f_scale;
+  res.y = data->y * f_scale;
+  res.z = data->z * f_scale;
+  return res;
+}
+
 void LIS3DSH_Led(const axis_s *in, int32_t threshold) {
 	if (in->x > threshold) {
     LED_ON(green);
@@ -129,13 +142,16 @@ void LIS3DSH_View() {
       LIS3DSH_Read(OUT_DATA, data, 6);
 #endif
       temp = LIS3DSH_Decode(data);
-      PCF8812_SValue("X ", temp.x, "", 2);
-      PCF8812_SValue("Y ", temp.y, "", 3);
-      PCF8812_SValue("Z ", temp.z, "", 4);
+      real_axis_s res = LIS3DSH_Convert(&temp, SCALE_8G);
+      PCF8812_FValue("X ", res.x, " G", 1);
+      PCF8812_FValue("Y ", res.y, " G", 2);
+      PCF8812_FValue("Z ", res.z, " G", 3);
+
+      PCF8812_HValue("HEX ", (uint16_t) (((uint16_t)data[1] << 8) | (uint16_t)data[0])/*, " G"*/, 5);
 
       LIS3DSH_Led(&temp, 800);
 
-      delay_ms(220);
+      delay_ms(300);
       if(Button_Get(user_button))
         return;
       PCF8812_DELAY;

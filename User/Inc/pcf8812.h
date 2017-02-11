@@ -12,7 +12,7 @@
 #include "user.h"
 #include <math.h>
 //#include "main.h"
-//#include <stdlib.h>
+#include <stdlib.h>
 //#define USE_SPRINTF
 
 
@@ -340,8 +340,8 @@ void PCF8812_Putline_Center(char* s, uint8_t line);
 void PCF8812_Putline_Right(char* s, uint8_t line);
 void PCF8812_SValue(char* name, int32_t value, char* unit, uint8_t line);
 void PCF8812_UValue(char* name, uint32_t value, char* unit, uint8_t line);
-void PCF8812_Hex_Value(char* name, int32_t value, uint8_t line);
-void PCF8812_Float_Value(char* name, double value, char* unit, uint8_t line);
+void PCF8812_HValue(char* name, uint32_t value, uint8_t line);
+void PCF8812_FValue(char* name, double value, char* unit, uint8_t line);
 void PCF8812_Percent(char* name, int8_t value, uint8_t line);
 void PCF8812_Set_bit(uint8_t x, uint8_t y);
 void PCF8812_Clr_bit(uint8_t x, uint8_t y);

@@ -245,48 +245,52 @@ void PCF8812_Putline_Right(char* s, uint8_t line) {
   PCF8812_Putline(str, line);
 }
 
+
+#ifdef USE_SPRINTF
+
 void PCF8812_SValue(char* name, int32_t value, char* unit, uint8_t line) {
   char str[PCF8812_STR_SIZ];
-  //call snprintf for calculate wide for name
-  uint8_t name_wide = PCF8812_LCD_LINE - snprintf(str, PCF8812_STR_SIZ, "% li%.3s", value, unit);
-  snprintf(str, PCF8812_STR_SIZ, "%.*s% li%.3s", name_wide, name, value, unit);
+  uint8_t n_dig = PCF8812_STR_SIZ - strlen(name) - strlen(unit);
+  char *pval = (char *)malloc(n_dig);
+  snprintf(pval, n_dig, "% *.li", (n_dig - 1), value);
+  snprintf(str, PCF8812_STR_SIZ, "%s%s%s", name, pval, unit);
+  free(pval);
   PCF8812_Putline_Center(str, line);
 }
 
 void PCF8812_UValue(char* name, uint32_t value, char* unit, uint8_t line) {
   char str[PCF8812_STR_SIZ];
-  //call snprintf for calculate wide for name
-  uint8_t name_wide = PCF8812_LCD_LINE - snprintf(str, PCF8812_STR_SIZ, " %lu%.3s", value, unit);
-  snprintf(str, PCF8812_STR_SIZ, "%.*s %lu%.3s", name_wide, name, value, unit);
+  uint8_t n_dig = PCF8812_STR_SIZ - strlen(name) - strlen(unit);
+  char *pval = (char *)malloc(n_dig);
+  snprintf(pval, n_dig, "% *.lu", (n_dig - 1), value);
+  snprintf(str, PCF8812_STR_SIZ, "%s%s%s", name, pval, unit);
+  free(pval);
   PCF8812_Putline_Center(str, line);
 }
 
-void PCF8812_Hex_Value(char* name, int32_t value, uint8_t line) {
+void PCF8812_HValue(char* name, uint32_t value, uint8_t line) {
   char str[PCF8812_STR_SIZ];
-  //call snprintf for calculate wide for name
-  uint8_t name_wide = PCF8812_LCD_LINE - snprintf(str, PCF8812_STR_SIZ, " %#lx", value);
-  snprintf(str, PCF8812_STR_SIZ, "%.*s %#lx", name_wide, name, value);
-  PCF8812_Putline_Center(str, line);
+  uint8_t n_dig = PCF8812_STR_SIZ - strlen(name);
+  char *pval = (char *)malloc(n_dig);
+  snprintf(pval, n_dig, "%#*.8lx", (n_dig - 1), value);
+  snprintf(str, PCF8812_STR_SIZ, "%s%s", name, pval);
+  free(pval);
+  PCF8812_Putline(str, line);
 }
-#ifdef USE_SPRINTF
-void PCF8812_Float_Value(char* name, double
-                         value, char* unit, uint8_t line) {
+
+void PCF8812_FValue(char* name, double value, char* unit, uint8_t line) {
   char str[PCF8812_STR_SIZ];
-  uint8_t float_prec = 6;
-  uint8_t name_len = strlen(name);
-  //call snprintf for calculate wide for name
-  uint8_t name_wide = PCF8812_LCD_LINE - snprintf(str, PCF8812_STR_SIZ, "% .*g%.3s", float_prec, value, unit);
-  //name wide less than name len and less than 5
-  if((name_wide < name_len) && (name_wide < 5)) {
-      name_wide = (name_len > 5) ? 5 : name_len;
-      float_prec = 8 - name_wide;//correct float precision
-    }
-  snprintf(str, PCF8812_STR_SIZ, "%.*s% .*g%.3s", name_wide, name, float_prec, value, unit);
-  PCF8812_Putline_Center(str, line);
+  uint8_t n_dig = PCF8812_STR_SIZ - strlen(name) - strlen(unit);
+  char *pval = (char *)malloc(n_dig);
+  snprintf(pval, n_dig, "% *.4g", (n_dig - 1), value);
+  snprintf(str, PCF8812_STR_SIZ, "%s%s%s", name, pval, unit);
+  free(pval);
+  PCF8812_Putline(str, line);
 }
+
 #else
 
-char *  _EXFUN(gcvt,(double,int,char *));
+//char *  _EXFUN(gcvt,(double,int,char *));
 //char *  _EXFUN(gcvtf,(float,int,char *));
 //char *  _EXFUN(fcvt,(double,int,int *,int *));
 //char *  _EXFUN(fcvtf,(float,int,int *,int *));
@@ -295,16 +299,58 @@ char *  _EXFUN(gcvt,(double,int,char *));
 //char *  _EXFUN(fcvtbuf,(double, int, int*, int*, char *));
 //char *  _EXFUN(ecvtf,(float,int,int *,int *));
 
-void PCF8812_Float_Value(char* name, double value, char* unit, uint8_t line) {
+void PCF8812_FValue(char* name, double value, char* unit, uint8_t line) {
   char str[PCF8812_STR_SIZ];
-  char f_str[PCF8812_STR_SIZ];
-  int prec = 6;
-  uint8_t name_len = strlen(name);
-  uint8_t name_wide = (name_len > 6) ? 6 : name_len;
-  gcvt(value, prec, f_str);
-  snprintf(str, PCF8812_STR_SIZ, "%.*s% s%.3s", name_wide, name, f_str, unit);
+  uint8_t n_dig = PCF8812_STR_SIZ - strlen(name) - strlen(unit);
+  char *pval = (char *)malloc(n_dig);
+  gcvt(value, (n_dig - 6), pval);
+  strcpy(str, name);
+  strncat(str, EMPTY_STR, (n_dig - strlen(pval) - 1));
+  strcat(str, pval);
+  strcat(str, unit);
+  free(pval);
+  PCF8812_Putline(str, line);
+}
+
+void PCF8812_SValue(char* name, int32_t value, char* unit, uint8_t line) {
+  char str[PCF8812_STR_SIZ];
+  uint8_t n_dig = PCF8812_STR_SIZ - strlen(name) - strlen(unit);
+  char *pval = (char *)malloc(n_dig);
+  itoa(value, pval, 10);
+  strcpy(str, name);
+  strncat(str, EMPTY_STR, (n_dig - strlen(pval) - 1));
+  strcat(str, pval);
+  strcat(str, unit);
+  free(pval);
   PCF8812_Putline_Center(str, line);
 }
+
+void PCF8812_UValue(char* name, uint32_t value, char* unit, uint8_t line) {
+  char str[PCF8812_STR_SIZ];
+  uint8_t n_dig = PCF8812_STR_SIZ - strlen(name) - strlen(unit);
+  char *pval = (char *)malloc(n_dig);
+  utoa(value, pval, 10);
+  strcpy(str, name);
+  strncat(str, EMPTY_STR, (n_dig - strlen(pval) - 1));
+  strcat(str, pval);
+  strcat(str, unit);
+  free(pval);
+  PCF8812_Putline_Center(str, line);
+}
+
+void PCF8812_HValue(char* name, uint32_t value, uint8_t line) {
+  char str[PCF8812_STR_SIZ];
+  uint8_t n_dig = PCF8812_STR_SIZ - strlen(name);
+  char *pval = (char *)malloc(n_dig);
+  utoa(value, pval, 16);
+  strcpy(str, name);
+  strncat(str, EMPTY_STR, (n_dig - strlen(pval) - 3));
+  strcat(str, "0x");
+  strcat(str, pval);
+  free(pval);
+  PCF8812_Putline_Center(str, line);
+}
+
 #endif
 
 void PCF8812_Percent(char* name, int8_t value, uint8_t line) {

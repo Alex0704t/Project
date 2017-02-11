@@ -100,7 +100,7 @@ void Read_Voltage(void) {
   uint16_t value;
   ADC1_Init();
   Button_Set_Name(user_button, "EXIT");
-  while(1) {
+  while (1) {
       PCF8812_Clear();
       PCF8812_Putline("VOLTAGE  (PA1-IN)", 0);
       if(Check_delay_ms(500)) {
@@ -108,8 +108,8 @@ void Read_Voltage(void) {
         value = value * U_3V / 4095;
         USB_Send_Int(value);
       }
-      PCF8812_Float_Value("Vdc ", value / 1000.0, " V", 2);
-      if(Button_Get(user_button))
+      PCF8812_FValue("Vdc ", value / 1000.0, " V", 2);
+      if (Button_Get(user_button))
         return;
       PCF8812_DELAY;
     }

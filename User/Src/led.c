@@ -131,31 +131,31 @@ void Led_Set_Blink(uint8_t led, char* name) {
   Button_Set_Name(button_1, "-0.5s");
   Button_Set_Name(button_2, "+0.5s");
   INCR_ENC(TIME_STEP);
-  while(1) {
+  while (1) {
     PCF8812_Clear();
     PCF8812_Title(name);
-    PCF8812_Float_Value("PULSE ", on_time / 10.0, "s", 2);
+    PCF8812_FValue("PULSE ", on_time / 10.0, "s", 2);
     on_time = Get_Enc_Count(100);
-    if(Button_Get(button_1))
+    if (Button_Get(button_1))
       DECR_ENC(TIME_STEP);
-    if(Button_Get(button_2))
+    if (Button_Get(button_2))
       INCR_ENC(TIME_STEP);
-    if(Button_Get(user_button))
+    if (Button_Get(user_button))
       break;
     PCF8812_DELAY;
   }
   Enc_Set_Zero();
   INCR_ENC(TIME_STEP);
-  while(1) {
+  while (1) {
     PCF8812_Clear();
     PCF8812_Title(name);
-    PCF8812_Float_Value("PAUSE ", off_time / 10.0, "s", 2);
+    PCF8812_FValue("PAUSE ", off_time / 10.0, "s", 2);
     off_time = Get_Enc_Count(100);
-    if(Button_Get(button_1))
+    if (Button_Get(button_1))
       DECR_ENC(TIME_STEP);
-    if(Button_Get(button_2))
+    if (Button_Get(button_2))
       INCR_ENC(TIME_STEP);
-    if(Button_Get(user_button))
+    if (Button_Get(user_button))
       break;
     PCF8812_DELAY;
   }

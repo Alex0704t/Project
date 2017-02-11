@@ -18,6 +18,12 @@ typedef struct axis{int16_t x;
                     int16_t z;
                    }axis_s;
 
+typedef struct real_axis{double x;
+                         double y;
+                         double z;
+                        }real_axis_s;
+
+
 #define LIS3DSH_CS_ON()                   GPIOE->BSRR = GPIO_BSRR_BR_3
 #define LIS3DSH_CS_OFF()                  GPIOE->BSRR = GPIO_BSRR_BS_3
 #define DUMMY                             0x00
@@ -177,10 +183,10 @@ typedef struct axis{int16_t x;
 
 typedef enum {
   SCALE_2G  = CTRL_REG5_FSCALE_2G,
-  SCALE_4G  = CTRL_REG5_FSCALE_2G,
-  SCALE_6G  = CTRL_REG5_FSCALE_2G,
-  SCALE_8G  = CTRL_REG5_FSCALE_2G,
-  SCALE_16G = CTRL_REG5_FSCALE_2G
+  SCALE_4G  = CTRL_REG5_FSCALE_4G,
+  SCALE_6G  = CTRL_REG5_FSCALE_6G,
+  SCALE_8G  = CTRL_REG5_FSCALE_8G,
+  SCALE_16G = CTRL_REG5_FSCALE_16G
 }lis3dsh_scale;
 
 typedef enum {
@@ -209,6 +215,7 @@ void LIS3DSH_Init(void);
 void LIS3DSH_En(lis3dsh_scale scale, lis3dsh_data_rate rate);
 void LIS3DSH_Int2_Init(void);
 axis_s LIS3DSH_Decode(uint8_t *data);
+real_axis_s LIS3DSH_Convert(axis_s *data, lis3dsh_scale scale);
 void LIS3DSH_Led(const axis_s *in, int32_t threshold);
 void LIS3DSH_MovDetEn(lis3dsh_scale scale, lis3dsh_data_rate rate);
 void LIS3DSH_View();
