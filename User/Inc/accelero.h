@@ -211,7 +211,9 @@ typedef enum {
 #endif
 
 void LIS3DSH_CS_Init(void);
+inline void LIS3DSH_CS_DeInit(void);
 void LIS3DSH_Init(void);
+void LIS3DSH_DeInit(void);
 void LIS3DSH_En(lis3dsh_scale scale, lis3dsh_data_rate rate);
 void LIS3DSH_Int2_Init(void);
 axis_s LIS3DSH_Decode(uint8_t *data);

@@ -35,6 +35,11 @@ void SPI1_Init(void) {
 	NVIC_EnableIRQ(SPI1_IRQn);//IRQ handler
 }
 
+void SPI1_DeInit(void) {
+  RCC->APB2ENR &= ~RCC_APB2ENR_SPI1EN;//disable SPI1 clock
+  NVIC_DisableIRQ(SPI1_IRQn);//disable IRQ handler
+}
+
 void LIS3DSH_Write(uint8_t addr, uint8_t *data, uint8_t size) {
   uint8_t temp = 0;
   LIS3DSH_CS_ON();
@@ -84,10 +89,8 @@ void LIS3DSH_SetReg(uint8_t addr, uint8_t value) {
   LIS3DSH_Write(addr, &temp, 1);
 }
 
-void LIS3DSH_ClearReg(uint8_t addr, uint8_t value) {
-  uint8_t temp = LIS3DSH_ReadReg(addr);
-  temp &= ~value;
-  LIS3DSH_Write(addr, &temp, 1);
+void LIS3DSH_ClearReg(uint8_t addr) {
+  LIS3DSH_Write(addr, (uint8_t*)0x00, 1);
 }
 
 void LIS3DSH_ModReg(uint8_t addr, uint8_t mask, uint8_t value) {
@@ -145,6 +148,14 @@ void SPI1_DMA_Init(void) {
 
 }
 
+void SPI1_DMA_DeInit(void) {
+  SPI1->CR2 &= ~SPI_CR2_TXDMAEN;//Tx buffer DMA disable
+  SPI1->CR2 &= ~SPI_CR2_RXDMAEN;//Rx buffer DMA disable
+  NVIC_EnableIRQ(DMA2_Stream3_IRQn);//disable IRQ handler
+  NVIC_EnableIRQ(DMA2_Stream0_IRQn);//disable IRQ handler
+  SPI1_DeInit();
+}
+
 __IO uint8_t lis3dsh_data_ready;
 __IO uint8_t lis3dsh_ax_data[LIS3DSH_BUFSIZE];
 uint8_t lis3dsh_tx_dummy[LIS3DSH_BUFSIZE] = {OUT_DATA|0x80, 0, 0, 0, 0, 0, 0};
@@ -157,8 +168,8 @@ void LIS3DSH_GetAxis() {
 	DMA2_Stream3->CR |= DMA_SxCR_TCIE;//transfer complete interrupt enable
 	DMA2_Stream3->NDTR = LIS3DSH_BUFSIZE;//data size
 	if ((SPI1_DMA_mode_flag & SPI1_DMA_LIS3DSH) != SPI1_DMA_LIS3DSH)
-	  SPI1_DMA_mode_flag |= SPI1_DMA_LIS3DSH;//
-	LIS3DSH_ResetFlag();
+	  SPI1_DMA_mode_flag |= SPI1_DMA_LIS3DSH;//set DMA mode flag if need
+	LIS3DSH_ResetFlag();//
 	LIS3DSH_CS_ON();
   DMA2_Stream0->CR |= DMA_SxCR_EN;//stream enable
 	DMA2_Stream3->CR |= DMA_SxCR_EN;//stream enable

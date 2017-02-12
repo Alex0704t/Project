@@ -20,6 +20,11 @@ void LIS3DSH_CS_Init(void) {
 	GPIOE->PUPDR &= ~GPIO_PUPDR_PUPDR3;//no pull-up & pull-down
 }
 
+inline void LIS3DSH_CS_DeInit(void) {
+  GPIOE->MODER &= ~(GPIO_MODER_MODER3_0|GPIO_MODER_MODER3_1);//PE3 reset state
+}
+
+
 void LIS3DSH_Int2_Init(void) {
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOEEN;//GPIOA clock enable
 	GPIOE->MODER &= ~GPIO_MODER_MODER1;//Input PE1
@@ -39,6 +44,16 @@ void LIS3DSH_Init(void) {
 	SPI1_DMA_Init();
 	LIS3DSH_CS_Init();
 	LIS3DSH_CS_OFF();
+}
+
+void LIS3DSH_DeInit(void) {
+  LIS3DSH_ClearReg(CTRL_REG4);//power down LIS3DSH
+  if ((SPI1_DMA_mode_flag & SPI1_DMA_LIS3DSH) == SPI1_DMA_LIS3DSH) {
+    SPI1_DMA_mode_flag = 0;//clear DMA mode flag
+//  SPI1_DeInit();
+    SPI1_DMA_DeInit();
+  }
+  LIS3DSH_CS_DeInit();
 }
 
 void LIS3DSH_En(lis3dsh_scale scale, lis3dsh_data_rate rate) {
@@ -131,23 +146,28 @@ void LIS3DSH_MovDetEn(lis3dsh_scale scale, lis3dsh_data_rate rate) {
 void LIS3DSH_View() {
   uint8_t data[6];
   axis_s temp = {};
+  real_axis_s res = {};
+  int32_t arr[3] = {};
   Button_Set_Name(user_button, "EXIT");
   while(1) {
       PCF8812_Clear();
       PCF8812_Title("LIS3DSH");
+      if (Check_delay_ms(330)) {
 #if 1
-      LIS3DSH_GetAxis();
-      LIS3DSH_WaitFlag();
-      LIS3DSH_GetData(data);
+        LIS3DSH_GetAxis();
+        LIS3DSH_WaitFlag();
+        LIS3DSH_GetData(data);
 #else
-      LIS3DSH_Read(OUT_DATA, data, 6);
+        LIS3DSH_Read(OUT_DATA, data, 6);
 #endif
-      temp = LIS3DSH_Decode(data);
-      real_axis_s res = LIS3DSH_Convert(&temp, SCALE_8G);
+        temp = LIS3DSH_Decode(data);
+        res = LIS3DSH_Convert(&temp, SCALE_2G);
+        arr[0] = temp.x, arr[1] = temp.y, arr[2] = temp.z;
+        USB_Send_IntArr(arr, 3);
+      }
       PCF8812_FValue("X ", res.x, " G", 1);
       PCF8812_FValue("Y ", res.y, " G", 2);
       PCF8812_FValue("Z ", res.z, " G", 3);
-
       uint16_t threshold = 500;
       if (temp.x > threshold) {
         PCF8812_Set_Symb(blank, 5, 9);
@@ -173,12 +193,6 @@ void LIS3DSH_View() {
         PCF8812_Set_Symb(blank, 6, 8);
         PCF8812_Set_Symb(blank, 4, 8);
       }
-
-      int32_t arr[3] = {temp.x, temp.y, temp.z};
-      USB_Send_IntArr(arr, 3);
-      Write_to_USB("|");
-
-      delay_ms(1300);
       if(Button_Get(user_button))
         return;
       PCF8812_DELAY;

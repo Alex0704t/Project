@@ -28,13 +28,15 @@ enum {SPI1_DMA_disable      = 0x00,
 }SPI1_DMA_mode;
 
 void SPI1_Init(void);
+void SPI1_DeInit(void);
 void SPI1_DMA_Init(void);
+void SPI1_DMA_DeInit(void);
 void LIS3DSH_Write(uint8_t addr, uint8_t *data, uint8_t size);
 void LIS3DSH_Read(uint8_t addr, uint8_t *data, uint8_t size);
 void LIS3DSH_WriteReg(uint8_t addr, uint8_t value);
 uint8_t LIS3DSH_ReadReg(uint8_t addr);
 void LIS3DSH_SetReg(uint8_t addr, uint8_t value);
-void LIS3DSH_ClearReg(uint8_t addr, uint8_t value);
+void LIS3DSH_ClearReg(uint8_t addr);
 void LIS3DSH_ModReg(uint8_t addr, uint8_t mask, uint8_t value);
 uint8_t LIS3DSH_CheckReg(uint8_t addr, uint8_t value);
 void LIS3DSH_GetAxis(void);

@@ -13,15 +13,15 @@
 #define LED_ON(led)       do\
                           {RESET_BLINK(led);\
                           Led_Set(led, 100);\
-                          }while(0)
+                          }while (0)
 #define LED_OFF(led)      do\
                           {RESET_BLINK(led);\
                           Led_Set(led, 0);\
-                          }while(0)
+                          }while (0)
 #define LED_TOGGLE(led)   do\
                           {RESET_BLINK(led);\
                           Led_Toggle(led);\
-                          }while(0)
+                          }while (0)
 
 #else
 

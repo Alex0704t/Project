@@ -17,28 +17,13 @@
   * @retval None
   */
 
-int main(void)
-{
+int main(void) {
   MCU_Init();
-  LIS3DSH_Init();
-//  Audio_Init();
-  LIS3DSH_En(SCALE_8G, ODR_100Hz);
-//  LIS3DSH_MovDetEn(SCALE_2G, ODR_100Hz);
 
-  while (1)
-  {
-//      delay_ms(5000);
-//      RESET_BLINK(blue);
+  while (1) {
 
-//      MovDetectEN();
-//      GetAxData();
-      LIS3DSH_View();
-//      Dir_Led();
-//	  Main_menu();
-
-//	  LED_TOGGLE(blue);
-//	  PCF8812_Clear();
-//	  while(1);
+	  Main_menu();
+//	  LIS3DSH_Use();
   }
 }
 

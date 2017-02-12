@@ -105,7 +105,8 @@ void USB_Echo() {
 */
 void USB_Send_Int(int32_t value) {
   char buffer[HID_IN_PACKET] = {0};
-  snprintf(buffer, HID_IN_PACKET, "%ld\n", value);
+//  snprintf(buffer, HID_IN_PACKET, "%ld\n", value);
+  itoa(value, buffer, 10);
   Write_to_USB(buffer);
   ClearBuf(buffer, HID_IN_PACKET);
 }
