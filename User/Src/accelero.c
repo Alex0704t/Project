@@ -174,8 +174,11 @@ void LIS3DSH_View() {
         PCF8812_Set_Symb(blank, 4, 8);
       }
 
+      int32_t arr[3] = {temp.x, temp.y, temp.z};
+      USB_Send_IntArr(arr, 3);
+      Write_to_USB("|");
 
-      delay_ms(300);
+      delay_ms(1300);
       if(Button_Get(user_button))
         return;
       PCF8812_DELAY;

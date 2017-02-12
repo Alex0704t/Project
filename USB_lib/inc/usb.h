@@ -25,6 +25,7 @@ uint8_t Write_to_USB(char* data);
 uint8_t Read_from_USB(char* data);
 void USB_Echo();
 void USB_Send_Int(int32_t value);
+void USB_Send_IntArr(int32_t *data, uint8_t size);
 void USB_Count(uint32_t period_ms);
 void USB_Ctrl();
 

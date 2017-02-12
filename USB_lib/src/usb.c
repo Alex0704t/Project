@@ -111,6 +111,33 @@ void USB_Send_Int(int32_t value) {
 }
 
 /**
+* @brief  This Function send int number array via USB
+* @param  data: integer array.
+* @param  size: number of integer members of array.
+* @retval none:
+*/
+void USB_Send_IntArr(int32_t *data, uint8_t size) {
+  char buffer[HID_IN_PACKET] = {0};
+  char temp[11] = {};
+  uint8_t buf_i = 0;//current buffer index
+  for (uint8_t i = 0; i < size; i++) {
+//    sprintf(temp, "%10.10ld,", data[i]);
+    itoa(data[i], temp, 10);
+    strcat(buffer, temp);
+    strcat(buffer, ",");//insert separator
+    buf_i += strlen(temp) + 1;
+    if (((i % 5) == 0) && (i != 0)) {//send 5 integer in one report
+      Write_to_USB(buffer);
+      ClearBuf(buffer, HID_IN_PACKET);
+      buf_i = 0;
+    }
+  }
+  buffer[buf_i - 1] = ';';//replace last separate character
+  Write_to_USB(buffer);
+  ClearBuf(buffer, HID_IN_PACKET);
+}
+
+/**
 * @brief  This Function send counter via USB
 * @param  data: period between transmit in ms.
 * @retval none:
@@ -172,7 +199,7 @@ void USB_Ctrl() {
       else
         no_resp = 1;
     }
-    if(no_resp)
+    if (no_resp)
       PCF8812_Putline_Center(msg, 3);
     PCF8812_Putline_Center(str, 4);
     if (Button_Get(user_button))
