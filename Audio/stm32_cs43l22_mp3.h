@@ -36,7 +36,6 @@ extern UB_MP3 alarm1;
 extern UB_MP3 alarm2;
 extern UB_MP3 signal1;
 extern UB_MP3 signal2;
-
 //--------------------------------------------------------------
 // internal Enum
 //--------------------------------------------------------------

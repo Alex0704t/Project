@@ -19,10 +19,12 @@
 
 int main(void) {
   MCU_Init();
+  UB_CS43L22_InitMP3();
 
   while (1) {
 
-	  Main_menu();
+      UB_CS43L22_PlayMP3Loop(&alarm2, 70);
+//	  Main_menu();
 //	  LIS3DSH_Use();
   }
 }
