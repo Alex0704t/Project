@@ -34,6 +34,8 @@ USER_DIR:=				User
 include $(USER_DIR)/Makefile
 USB_DIR:=				USB_lib
 include $(USB_DIR)/Makefile
+MP3_DIR:=				Audio
+include $(MP3_DIR)/Makefile
 
 SRCS:=					$(wildcard $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)/*.c)))
 OBJS:=    				$(SRCS:.c=.o)
