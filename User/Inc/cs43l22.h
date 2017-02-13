@@ -11,7 +11,7 @@
 
 
 #define VERIFY_WRITTENDATA
-//#define USE_I2S3_MCLK_ONLY
+//#define USE_I2S3_MCLK_ONLY//uncomment if use only beep or sine generation
 #define CODEC_ADDRESS                 0x94
 
 #define AUDIO_PAUSE                   0
