@@ -16,8 +16,12 @@ void SPI1_Init(void) {
 	 * PA7 - SPI1_MOSI
 	 */
 	GPIOA->MODER |= 0x0000A800;//alternate function mode
-	GPIOA->OSPEEDR &= ~0x0000FC00;//low speed
+//	GPIOA->OSPEEDR &= ~0x00008C00;//low speed
+  GPIOA->OSPEEDR |= 0x0000C800;//high speed
 	GPIOA->PUPDR &= ~0x0000FC00;//no pull-up & pull-down
+//	GPIOA->PUPDR |= 0x0000C400;//pull-down
+//	GPIOA->PUPDR |= GPIO_PUPDR_PUPDR6_0;//PA6 pull-up
+
 	GPIOA->AFR[0] |= 0x55500000;//SPI1 alternate function AF5
 	SPI1->CR1 &= ~0xFFFF;//clear CR1 register
 	SPI1->CR1 |= SPI_CR1_MSTR;//master mode
@@ -26,10 +30,13 @@ void SPI1_Init(void) {
 	SPI1->CR1 &= ~SPI_CR1_CPOL;//clock polarity low
 	SPI1->CR1 &= ~SPI_CR1_CPHA;//clock 1 edge
 	SPI1->CR1 |= SPI_CR1_BR_0|SPI_CR1_BR_1;//baudrate Fpclk/16
+//	SPI1->CR1 |= SPI_CR1_BR_0|SPI_CR1_BR_2;//baudrate Fpclk/64
 	SPI1->CR1 &= ~SPI_CR1_LSBFIRST;//MSB transmitted first
 	SPI1->CR1 |= SPI_CR1_SSM;//software slave management enable
 	SPI1->CR1 |= SPI_CR1_SSI;//external slave select
 	SPI1->CR1 |= SPI_CR1_SPE;//SPI enable
+
+//	SPI1->CRCPR = 7;
 
 	NVIC_SetPriority(SPI1_IRQn, 4);
 	NVIC_EnableIRQ(SPI1_IRQn);//IRQ handler

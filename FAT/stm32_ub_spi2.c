@@ -26,9 +26,9 @@
 //--------------------------------------------------------------
 SPI1_DEV_t SPI1DEV = {
 // PORT , PIN       , Clock              , Source
-  {GPIOA,GPIO_Pin_5, RCC_AHB1Periph_GPIOB, GPIO_PinSource5}, // SCK as PA5
-  {GPIOA,GPIO_Pin_7, RCC_AHB1Periph_GPIOB, GPIO_PinSource7}, // MOSI as PA7
-  {GPIOA,GPIO_Pin_6, RCC_AHB1Periph_GPIOB, GPIO_PinSource6}, // MISO as PA6
+  {GPIOA,GPIO_Pin_5, RCC_AHB1Periph_GPIOA, GPIO_PinSource5}, // SCK as PA5
+  {GPIOA,GPIO_Pin_7, RCC_AHB1Periph_GPIOA, GPIO_PinSource7}, // MOSI as PA7
+  {GPIOA,GPIO_Pin_6, RCC_AHB1Periph_GPIOA, GPIO_PinSource6}, // MISO as PA6
 };
 
 
@@ -47,7 +47,7 @@ ErrorStatus UB_SPI1_Init(SPI1_Mode_t mode)
   GPIO_InitTypeDef  GPIO_InitStructure;
   SPI_InitTypeDef  SPI_InitStructure;
 
-  // initialisierung darf nur einmal gemacht werden
+  // init only once
   if(init_ok!=0) {
     if(init_mode==mode) ret_wert=SUCCESS;
     return(ret_wert);

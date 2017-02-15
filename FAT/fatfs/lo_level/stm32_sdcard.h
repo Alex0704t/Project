@@ -129,8 +129,9 @@
 #define CMD38	(38)       // ERASE
 #define CMD55	(55)       // APP_CMD
 #define CMD58	(58)       // READ_OCR
-
+#ifndef NULL
 #define NULL    0
+#endif
 #define SD_PRESENT        ((uint8_t)0x01)
 #define SD_NOT_PRESENT    ((uint8_t)0x00)
 

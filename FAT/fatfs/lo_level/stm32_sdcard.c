@@ -1,25 +1,16 @@
 //--------------------------------------------------------------
-// File     : stm32_ub_sdcard.c
-// Datum    : 27.11.2014
-// Version  : 1.0
-// Autor    : UB
-// EMail    : mc-4u(@)t-online.de
-// Web      : www.mikrocontroller-4u.de
-// CPU      : STM32F4
-// IDE      : CooCox CoIDE 1.7.4
-// GCC      : 4.7 2012q4
-// Module   : STM32_UB_SPI2, GPIO, TIM, MISC
-// Funktion : FATFS-Dateisystem fuer SD-Medien
-//            LoLevel-IO-Modul
-//            Quelle = STM32-Example von ChaN
-// Hinweis  : Betrieb per SPI-Schnittstelle
-//            (SPI Settings : stm32_ub_sdcard.h)
-//            Fuer die 1kHz ISR wird TIM6 benutzt !
+// File       : stm32_sdcard.c
+// Date       : 15.02.2017
+// Author     : UB
+// CPU        : STM32F407VG
+// IDE        : Eclipse IDE for C/C++ Developers
+//            : Version: Neon.2 Release (4.6.2)
+// GCC        : 5.4 2016q3
 //
-//   PB12 -> ChipSelect = SD-Karte CS   (CD)
-//   PB13 -> SPI-SCK    = SD-Karte SCLK (CLK)
-//   PB14 -> SPI-MISO   = SD-Karte DO   (DAT0) (*)
-//   PB15 -> SPI-MOSI   = SD-Karte DI   (CMD)
+//   PA3 -> ChipSelect = SD-Card CS   (1)
+//   PA5 -> SPI-SCK    = SD-Card SCLK (5)
+//   PA6 -> SPI-MISO   = SD-Card DO   (7) (*)
+//   PA7 -> SPI-MOSI   = SD-Card DI   (2)
 //    (*) MISO needs PullUp (internal or external)
 //
 // mit Detect-Pin :
@@ -27,7 +18,13 @@
 //   PC0  -> SD_Detect-Pin (Hi=ohne SD-Karte)
 //
 //--------------------------------------------------------------
+// This file remade from stm32_ub_sdcard.c
+// Author     : UB
+// EMail      : mc-4u(@)t-online.de
+// Web        : www.mikrocontroller-4u.de
+// Project    : Demo_89_FAFTS_SPI
 //
+//--------------------------------------------------------------
 // Copyright (C) 2014, ChaN, all right reserved.
 //
 // * This software is a free software and there is NO WARRANTY.
@@ -44,6 +41,7 @@
 // Includes
 //--------------------------------------------------------------
 #include <FAT/fatfs/lo_level/stm32_sdcard.h>
+#include "spi.h"
 
 
 //--------------------------------------------------------------
@@ -58,12 +56,11 @@ static BYTE CardType;
 //--------------------------------------------------------------
 // interne Funktionen
 //--------------------------------------------------------------
-void init_gpio(void);
-void init_tim(void);
-void init_nvic(void);
+void SDCard_CS_Init(void);
+inline void SDCard_CS_DeInit(void);
 void init_spi(void);
-void CS_HIGH(void);
-void CS_LOW(void);
+inline void SDCard_CS_Off(void);
+inline void SDCard_CS_On(void);
 void FCLK_SLOW(void);
 void FCLK_FAST(void);
 uint8_t SD_Detect(void);
@@ -72,8 +69,8 @@ static BYTE xchg_spi(BYTE dat);
 static void rcvr_spi_multi(BYTE *buff, UINT btr);
 static void xmit_spi_multi(const BYTE *buff, UINT btx);
 static int wait_ready(UINT wt);
-static void deselect(void);
-static int select(void);
+static void SD_unselect(void);
+static int SD_select(void);
 static int rcvr_datablock (BYTE *buff, UINT btr);
 static int xmit_datablock(const BYTE *buff,BYTE token);
 static BYTE send_cmd (BYTE cmd, DWORD arg);
@@ -83,16 +80,14 @@ void Disk_Timerproc(void);
  
 
 //--------------------------------------------------------------
-// init der Hardware fuer die SDCard-Funktionen
-// muss vor der Benutzung einmal gemacht werden
+// initialization Hardware before using SDCard
 //--------------------------------------------------------------
 void SDCard_Init(void) {
-  // first : chipselect
-  init_gpio();
-  CS_HIGH();			
-  // second : spi
-  init_spi();
-  for(Timer1 = 10; Timer1; ); // 10ms
+  SDCard_CS_Init();
+  SDCard_CS_Off();
+//  init_spi();
+  SPI1_Init();
+//  for(Timer1 = 10; Timer1; ); // 10ms
 }
 
 
@@ -150,7 +145,7 @@ DSTATUS MMC_disk_initialize(void)
     }
   }
   CardType = ty; // Card type 
-  deselect();
+  SD_unselect();
 
   if (ty) { // OK 
     FCLK_FAST(); // Set fast clock 
@@ -198,7 +193,7 @@ DRESULT MMC_disk_read(BYTE *buff,DWORD sector,UINT count)
       send_cmd(CMD12, 0); // STOP_TRANSMISSION 
     }
   }
-  deselect();
+  SD_unselect();
 
   return count ? RES_ERROR : RES_OK;
 }
@@ -234,7 +229,7 @@ DRESULT MMC_disk_write(const BYTE *buff,DWORD sector,	UINT count)
       if (!xmit_datablock(0, 0xFD)) count = 1;
     }
   }
-  deselect();
+  SD_unselect();
 
   return count ? RES_ERROR : RES_OK;
 }
@@ -259,7 +254,7 @@ DRESULT MMC_disk_ioctl(BYTE cmd,void *buff)
 
   switch (cmd) {
     case CTRL_SYNC : // Wait for end of internal write process of the drive 
-      if (select()) res = RES_OK;
+      if (SD_select()) res = RES_OK;
     break;
 
     case GET_SECTOR_COUNT : // Get drive capacity in unit of sector (DWORD) 
@@ -315,88 +310,32 @@ DRESULT MMC_disk_ioctl(BYTE cmd,void *buff)
       res = RES_PARERR;
   }
 
-  deselect();
+  SD_unselect();
 
   return res;
 }
 #endif
 
 
-//--------------------------------------------------------------
-// init aller GPIOs
-//--------------------------------------------------------------
-void init_gpio(void)
-{
-  GPIO_InitTypeDef  GPIO_InitStructure;
-  
-  // Clock enable 
-  #if USE_DETECT_PIN==1
-    RCC_AHB1PeriphClockCmd(SD_DETECT_GPIO_CLK  | SD_SLAVESEL_GPIO_CLK, ENABLE);
-  #else
-    RCC_AHB1PeriphClockCmd(SD_SLAVESEL_GPIO_CLK, ENABLE);
-  #endif
-  
-  // Config ChipSelect als Digital-Ausgang
-  GPIO_InitStructure.GPIO_Pin = SD_SLAVESEL_PIN;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_Init(SD_SLAVESEL_GPIO_PORT, &GPIO_InitStructure);  
-  
-  #if USE_DETECT_PIN==1
-    // Config CardDetect als Digital-Eingang (mit PullUp)
-    GPIO_InitStructure.GPIO_Pin = SD_DETECT_PIN;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-    GPIO_Init(SD_DETECT_GPIO_PORT, &GPIO_InitStructure);   
-  #endif  
+
+
+
+void SDCard_CS_Init(void) {
+#if (USE_DETECT_PIN == 1)
+//    if need insert according GPIO pin initialization
+#else
+  /*PA3 chip select for SDCard*/
+  RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
+  GPIOA->MODER |= GPIO_MODER_MODER3_0;//PE3 output
+  GPIOA->OSPEEDR &= ~GPIO_OSPEEDER_OSPEEDR3;//low speed
+  GPIOA->OTYPER &= ~GPIO_OTYPER_OT_3;//push-pull
+  GPIOA->PUPDR &= ~GPIO_PUPDR_PUPDR3;//no pull-up & pull-down
+#endif
 }
 
-
-//--------------------------------------------------------------
-// timer init auf 1kHz
-//--------------------------------------------------------------
-void init_tim(void)
-{
-  TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-
-  // Clock enable
-  RCC_APB1PeriphClockCmd(SD_1MS_TIM_CLK, ENABLE);
-
-  // Timer init
-  TIM_TimeBaseStructure.TIM_Period =  SD_1MS_TIM_PERIODE;
-  TIM_TimeBaseStructure.TIM_Prescaler = SD_1MS_TIM_PRESCALE;
-  TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
-  TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-  TIM_TimeBaseInit(SD_1MS_TIM, &TIM_TimeBaseStructure);
-
-  // Timer enable
-  TIM_ARRPreloadConfig(SD_1MS_TIM, ENABLE);
-  TIM_Cmd(SD_1MS_TIM, ENABLE);
+inline void SDCard_CS_DeInit(void) {
+  GPIOA->MODER &= ~(GPIO_MODER_MODER3_0|GPIO_MODER_MODER3_1);//PA3 reset state
 }
-
-
-//--------------------------------------------------------------
-// nvic init
-//--------------------------------------------------------------
-void init_nvic(void)
-{
-  NVIC_InitTypeDef NVIC_InitStructure;
-
-  //---------------------------------------------
-  // init vom Timer Interrupt
-  //---------------------------------------------
-  TIM_ITConfig(SD_1MS_TIM,TIM_IT_Update,ENABLE);
-
-  // NVIC konfig
-  NVIC_InitStructure.NVIC_IRQChannel = SD_1MS_TIM_IRQ;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&NVIC_InitStructure);
-}
-
 
 //--------------------------------------------------------------
 // spi init
@@ -408,7 +347,8 @@ void init_spi(void)
 #ifdef USE_ORIGIN
   UB_SPI2_Init(SD_SPI_MODE);
 #else
-  UB_SPI1_Init(SD_SPI_MODE);
+//  UB_SPI1_Init(SD_SPI_MODE);
+  SPI1_Init();
 #endif
   
   #if USE_INTERNAL_MISO_PULLUP==1
@@ -424,24 +364,12 @@ void init_spi(void)
   #endif
 }
 
-
-//--------------------------------------------------------------
-// CS-Pin=Hi
-//--------------------------------------------------------------
-void CS_HIGH(void)
-{
-  // pin auf HI
-  SD_SLAVESEL_GPIO_PORT->BSRR = SD_SLAVESEL_PIN;
+inline void SDCard_CS_Off(void) {
+  GPIOA->BSRR = GPIO_BSRR_BS_3;
 }
 
-
-//--------------------------------------------------------------
-// CS-Pin=Lo
-//--------------------------------------------------------------
-void CS_LOW(void)
-{
-  // pin auf LO
-  SD_SLAVESEL_GPIO_PORT->BSRR = SD_SLAVESEL_PIN << 16;
+inline void SDCard_CS_On(void) {
+  GPIOA->BSRR = GPIO_BSRR_BR_3;
 }
 
 
@@ -478,18 +406,16 @@ void FCLK_FAST(void)
 // ret_wert : 0=ohne Karte
 //            1=mit Karte
 //--------------------------------------------------------------
-uint8_t SD_Detect(void)
-{
-  uint8_t ret_wert=1;
-  
-  #if USE_DETECT_PIN==1
-    if (GPIO_ReadInputDataBit(SD_DETECT_GPIO_PORT, SD_DETECT_PIN) != Bit_RESET) {
-      // keine Karte eingelegt
-      ret_wert=0;  
-    }
+uint8_t SD_Detect(void) {
+  uint8_t ret =1 ;
+  #if (USE_DETECT_PIN == 1)
+//    insert according code if need
+//    if (DETECT_PIN == )) {
+//      //no one card insert
+//      ret = 0;
+//    }
   #endif
-  
-  return(ret_wert);
+  return ret;
 }
 
 
@@ -576,9 +502,8 @@ static int wait_ready(UINT wt)
 //--------------------------------------------------------------
 // Deselect card and release SPI           
 //--------------------------------------------------------------
-static void deselect(void)
-{
-  CS_HIGH(); // CS = H
+static void SD_unselect(void) {
+  SDCard_CS_Off();
   xchg_spi(0xFF); // Dummy clock (force DO hi-z for multiple slave SPI)
 }
 
@@ -587,13 +512,11 @@ static void deselect(void)
 // Select card and wait for ready  
 // ret_wert :  1:OK, 0:Timeout 
 //--------------------------------------------------------------
-static int select(void)
-{
-  CS_LOW();
+static int SD_select(void) {
+  SDCard_CS_On();
   xchg_spi(0xFF); // Dummy clock (force DO enabled)
-
   if (wait_ready(500)) return 1; // OK
-  deselect();
+  SD_unselect();
   return 0; // Timeout
 }
 
@@ -666,8 +589,8 @@ static BYTE send_cmd (BYTE cmd, DWORD arg)
 
   // Select the card and wait for ready except to stop multiple block read
   if (cmd != CMD12) {
-    deselect();
-    if (!select()) return 0xFF;
+    SD_unselect();
+    if (!SD_select()) return 0xFF;
   }
 
   // Send command packet
@@ -720,14 +643,3 @@ void Disk_Timerproc (void)
 }
 
 
-//--------------------------------------------------------------
-// ISR vom Timer
-//--------------------------------------------------------------
-/*void SD_1MS_TIM_ISR_HANDLER(void)
-{
-  // es gibt hier nur eine Interrupt Quelle
-  TIM_ClearITPendingBit(SD_1MS_TIM, TIM_IT_Update);
-
-  // funktion aufrufen
-  disk_timerproc();
-}*/

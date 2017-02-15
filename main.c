@@ -20,7 +20,7 @@
 int main(void)
 {
   MCU_Init();
-
+#if 1
   FIL myFile;
 
   // Init vom FATFS-System
@@ -49,10 +49,10 @@ int main(void)
     }
   }
 
-
+#endif
   while(1)
   {
-
+//      Main_menu();
   }
 }
 
@@ -66,7 +66,7 @@ int main(void) {
   while (1) {
 
       UB_CS43L22_PlayMP3Loop(&alarm2, 70);
-//	  Main_menu();
+//
 //	  LIS3DSH_Use();
   }
 }
