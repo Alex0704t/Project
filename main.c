@@ -10,13 +10,55 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+#include "FAT/stm32_ub_fatfs.h"
 
 /**
   * @brief  Main program.
   * @param  None
   * @retval None
   */
+int main(void)
+{
+  MCU_Init();
 
+  FIL myFile;
+
+  // Init vom FATFS-System
+  Fatfs_Init();
+
+  // Check ob Medium eingelegt ist
+  if(UB_Fatfs_CheckMedia(MMC_0)==FATFS_OK) {
+    // Media mounten
+    if(UB_Fatfs_Mount(MMC_0)==FATFS_OK) {
+      LED_ON(blue);
+      // File zum schreiben im root neu anlegen
+      if(UB_Fatfs_OpenFile(&myFile, "0:/New_File.txt", F_WR_CLEAR)==FATFS_OK) {
+          LED_ON(green);
+        // ein paar Textzeilen in das File schreiben
+        UB_Fatfs_WriteString(&myFile,"FATFS in SPI-Mode");
+        UB_Fatfs_WriteString(&myFile,"here second line");
+        UB_Fatfs_WriteString(&myFile,"end");
+        // File schliessen
+        UB_Fatfs_CloseFile(&myFile);
+      }
+      // Media unmounten
+      UB_Fatfs_UnMount(MMC_0);
+    }
+    else {
+        LED_ON(red);
+    }
+  }
+
+
+  while(1)
+  {
+
+  }
+}
+
+
+
+/*
 int main(void) {
   MCU_Init();
   UB_CS43L22_InitMP3();
@@ -29,7 +71,7 @@ int main(void) {
   }
 }
 
-
+*/
 
 #ifdef  USE_FULL_ASSERT
 

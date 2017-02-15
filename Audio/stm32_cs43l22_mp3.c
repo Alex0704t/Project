@@ -75,7 +75,7 @@ ErrorStatus UB_CS43L22_InitMP3(void)
       return ERROR;
     }
 
-    check = 0;//EVAL_AUDIO_Init(70);
+    check = EVAL_AUDIO_Init(70);
     if(check == 0)
     {
       ret = SUCCESS;
@@ -125,9 +125,7 @@ MP3_ERR_t UB_CS43L22_PlayMP3Single(UB_MP3 *mp3, uint8_t volume)
 
     PlayMP3WithCallback(MP3CallbackFct, 0);//MP3 start
     ret = MP3_OK;
-
   }
-
   return ret;
 }
 
@@ -256,18 +254,13 @@ void P_CS43L22_InitMP3(void)
 //--------------------------------------------------------------
 // internal Function
 //--------------------------------------------------------------
-void PlayMP3WithCallback(MP3CallbackFunction *callback_ptr, void *context)
-{
-  
+void PlayMP3WithCallback(MP3CallbackFunction *callback_ptr, void *context) {
   EVAL_AUDIO_StopDMA();
   my_mp3.dma_enable = 0;
-
   EVAL_AUDIO_Play();
-
   MP3CallbackFunctionPtr = callback_ptr;
   CallbackContextPtr = context;
   my_mp3.akt_buf_nr = 0;
-
   if (MP3CallbackFunctionPtr) {
     MP3CallbackFunctionPtr(CallbackContextPtr, my_mp3.akt_buf_nr);
   }

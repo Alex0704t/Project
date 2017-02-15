@@ -144,6 +144,7 @@ extern void Led_Systick_Blink(void);
 void SysTick_Handler(void) {
     Inc_Tick();
     Led_Systick_Blink();
+    Disk_Timerproc();
   }
 
 /**
@@ -289,11 +290,16 @@ void TIM5_IRQHandler() {
     }
 }
 
+#include "stm32_sdcard.h"
 void TIM6_DAC_IRQHandler(void) {
+  if (TIM6->SR & TIM_SR_UIF) {
+    TIM6->SR &= ~TIM_SR_UIF;//clear update interrupt flag
   TIM6->SR = 0;
+  Disk_Timerproc();
 #ifndef USE_DAC1_DMA
   DAC1_Handler();
 #endif
+  }
 }
 
 extern uint8_t *tx_uart1_ptr;

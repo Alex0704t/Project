@@ -64,13 +64,12 @@ uint32_t EVAL_AUDIO_Init(uint8_t volume)
 
 
 //--------------------------------------------------------------
-void EVAL_AUDIO_Play(void)
-{
+void EVAL_AUDIO_Play(void) {
   NVIC_EnableIRQ(DMA1_Stream7_IRQn);
   NVIC_SetPriority(DMA1_Stream7_IRQn, 4);
   SPI3->CR2 |= SPI_CR2_TXDMAEN;//enable DMA transmit
-  if(!(SPI3->I2SCFGR & SPI_I2SCFGR_I2SE))
-      SPI3->I2SCFGR |= SPI_I2SCFGR_I2SE;//enable I2S peripheral
+  if (!(SPI3->I2SCFGR & SPI_I2SCFGR_I2SE))
+       SPI3->I2SCFGR |= SPI_I2SCFGR_I2SE;//enable I2S peripheral
  }
 
 

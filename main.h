@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include "user.h"
 #include "usb.h"
-#include "stm32_cs43l22_mp3.h"
+//#include "stm32_cs43l22_mp3.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
@@ -37,7 +37,7 @@
 #define USE_FULL_ASSERT
 #define PWM_LED_CONTROL
 
-#define USE_MP3
+//#define USE_MP3
 
 #endif /* __STM32F4_DISCOVERY_USB_HID_H */
 
