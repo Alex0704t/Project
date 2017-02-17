@@ -45,7 +45,7 @@
 
 
 //--------------------------------------------------------------
-// Globale Variabeln
+// Global Variable
 //--------------------------------------------------------------
 static volatile DSTATUS Stat = STA_NOINIT;
 static volatile UINT Timer1, Timer2;
@@ -58,14 +58,13 @@ static BYTE CardType;
 //--------------------------------------------------------------
 void SDCard_CS_Init(void);
 inline void SDCard_CS_DeInit(void);
-void init_spi(void);
 inline void SDCard_CS_Off(void);
 inline void SDCard_CS_On(void);
 void FCLK_SLOW(void);
 void FCLK_FAST(void);
 uint8_t SD_Detect(void);
 //--------------------------------------------------------------
-static BYTE xchg_spi(BYTE dat);
+static BYTE xchg_spi(BYTE data);
 static void rcvr_spi_multi(BYTE *buff, UINT btr);
 static void xmit_spi_multi(const BYTE *buff, UINT btx);
 static int wait_ready(UINT wt);
@@ -85,8 +84,8 @@ void Disk_Timerproc(void);
 void SDCard_Init(void) {
   SDCard_CS_Init();
   SDCard_CS_Off();
-//  init_spi();
   SPI1_Init();
+//  delay_ms(10);
 //  for(Timer1 = 10; Timer1; ); // 10ms
 }
 
@@ -316,10 +315,6 @@ DRESULT MMC_disk_ioctl(BYTE cmd,void *buff)
 }
 #endif
 
-
-
-
-
 void SDCard_CS_Init(void) {
 #if (USE_DETECT_PIN == 1)
 //    if need insert according GPIO pin initialization
@@ -341,29 +336,6 @@ inline void SDCard_CS_DeInit(void) {
 // spi init
 // (set internal PullUp for MISO)
 //--------------------------------------------------------------
-void init_spi(void)
-{ 
-  // init spi
-#ifdef USE_ORIGIN
-  UB_SPI2_Init(SD_SPI_MODE);
-#else
-//  UB_SPI1_Init(SD_SPI_MODE);
-  SPI1_Init();
-#endif
-  
-  #if USE_INTERNAL_MISO_PULLUP==1
-  GPIO_InitTypeDef  GPIO_InitStructure;  
-  
-  // activate internal pullUp for MISO
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;  
-  GPIO_InitStructure.GPIO_Pin = SD_SPI_MISO_PIN;
-  GPIO_Init(SD_SPI_MISO_PORT, &GPIO_InitStructure);
-  #endif
-}
-
 inline void SDCard_CS_Off(void) {
   GPIOA->BSRR = GPIO_BSRR_BS_3;
 }
@@ -371,7 +343,6 @@ inline void SDCard_CS_Off(void) {
 inline void SDCard_CS_On(void) {
   GPIOA->BSRR = GPIO_BSRR_BR_3;
 }
-
 
 //--------------------------------------------------------------
 // SPI-Frq=Slow
@@ -421,34 +392,21 @@ uint8_t SD_Detect(void) {
 
 //--------------------------------------------------------------
 // Exchange a byte
-// dat : Data to send
+// data : Data to send
 //--------------------------------------------------------------
-static BYTE xchg_spi(BYTE dat)
-{
-  BYTE ret_wert=0;
-#ifdef USE_ORIGIN
-  ret_wert=UB_SPI2_SendByte(dat);
-#else
-  ret_wert=UB_SPI1_SendByte(dat);
-#endif
-  return(ret_wert);
+static BYTE xchg_spi(BYTE data) {
+  return SPI_ByteExchange(SPI1, data);
 }
-
 //--------------------------------------------------------------
 // Receive multiple byte
 // buff : Pointer to data buffer
 // btr : Number of bytes to receive (even number)
 //--------------------------------------------------------------
-static void rcvr_spi_multi(BYTE *buff, UINT btr)
-{
+static void rcvr_spi_multi(BYTE *buff, UINT btr) {
   BYTE b;
-        
   do {
-#ifdef USE_ORIGIN
-    b=UB_SPI2_SendByte(0xFF);
-#else
-    b=UB_SPI1_SendByte(0xFF);
-#endif
+//    b = UB_SPI1_SendByte(0xFF);
+    b = SPI_ByteExchange(SPI1, 0xFF);
     *buff=b;
     buff++;
     btr--;
@@ -462,17 +420,11 @@ static void rcvr_spi_multi(BYTE *buff, UINT btr)
 // buf : Pointer to the data
 // btx : Number of bytes to send (even number)
 //--------------------------------------------------------------
-static void xmit_spi_multi(const BYTE *buff, UINT btx)
-{	
+static void xmit_spi_multi(const BYTE *buff, UINT btx) {
   BYTE b;
-      
   do {
-    b=*buff;
-#ifdef USE_ORIGIN
-    UB_SPI2_SendByte(b);
-#else
-    UB_SPI1_SendByte(b);
-#endif
+    b = *buff;
+    SPI_ByteExchange(SPI1, b);
     buff++;
     btx--;
   } while (btx != 0);
@@ -485,16 +437,13 @@ static void xmit_spi_multi(const BYTE *buff, UINT btx)
 // wt :  Timeout [ms]
 // ret_wert : 1:Ready, 0:Timeout
 //--------------------------------------------------------------
-static int wait_ready(UINT wt)
-{
+static int wait_ready(UINT wt) {
   BYTE d;
-
   Timer2 = wt;
   do {
     d = xchg_spi(0xFF);
     // This loop takes a time. Insert rot_rdq() here for multitask envilonment.
   } while (d != 0xFF && Timer2); // Wait for card goes ready or timeout
-
   return (d == 0xFF) ? 1 : 0;
 }
 
@@ -609,7 +558,7 @@ static BYTE send_cmd (BYTE cmd, DWORD arg)
   n = 10; // Wait for response (10 bytes max)
   do {
     res = xchg_spi(0xFF);
-  }while ((res & 0x80) && --n);
+  } while ((res & 0x80) && --n);
 
   return res; // Return received response
 }

@@ -12,12 +12,15 @@
 //--------------------------------------------------------------
 #include <FAT/fatfs/diskio.h>
 #include "stm32f4xx.h"
-#include "../../stm32_ub_spi2.h"
+#include "main.h"
+#include "user.h"
+#include "spi.h"
+
 #include "../../cmsis_lib/include/stm32f4xx_gpio.h"
 #include "../../cmsis_lib/include/stm32f4xx_rcc.h"
 #include "../../cmsis_lib/include/stm32f4xx_tim.h"
+#include "../../cmsis_lib/include/stm32f4xx_spi.h"
 #include "../../cmsis_lib/include/misc.h"
-
 
 
 
@@ -25,17 +28,10 @@
 // defines der SPI Schnittstelle
 // SPI2_CLK = 42MHz
 //--------------------------------------------------------------
-#ifdef USE_ORIGIN
-#define SD_SPI_PORT               SPI2
-#define SD_SPI_MODE               SPI_MODE_0
-#define SD_SPI_CLK_SLOW           SPI_BaudRatePrescaler_64  // 656 kHz
-#define SD_SPI_CLK_FAST           SPI_BaudRatePrescaler_2   // 21 MHz
-#else
 #define SD_SPI_PORT               SPI1
 #define SD_SPI_MODE               SPI_MODE_0
 #define SD_SPI_CLK_SLOW           SPI_BaudRatePrescaler_64  // 656 kHz
 #define SD_SPI_CLK_FAST           SPI_BaudRatePrescaler_2   // 21 MHz
-#endif
 //--------------------------------------------------------------
 // interner PullUp fuer MISO
 // aktivieren oder deaktivieren
@@ -43,25 +39,14 @@
 //    0 = ohne internem PullUp -> externer PullUp notwendig
 //--------------------------------------------------------------
 #define USE_INTERNAL_MISO_PULLUP  1  // (mit internem PullUp)
-#ifdef USE_ORIGIN
-#define SD_SPI_MISO_PORT          GPIOB
-#define SD_SPI_MISO_PIN           GPIO_Pin_14
-#else
 #define SD_SPI_MISO_PORT          GPIOA
 #define SD_SPI_MISO_PIN           GPIO_Pin_6
-#endif
 //--------------------------------------------------------------
 // SlaveSelect der SD-Karte (PA3)
 //--------------------------------------------------------------
-#ifdef USE_ORIGIN
-#define SD_SLAVESEL_PIN           GPIO_Pin_12
-#define SD_SLAVESEL_GPIO_PORT     GPIOB
-#define SD_SLAVESEL_GPIO_CLK      RCC_AHB1Periph_GPIOB
-#else
 #define SD_SLAVESEL_PIN           GPIO_Pin_3
 #define SD_SLAVESEL_GPIO_PORT     GPIOA
 #define SD_SLAVESEL_GPIO_CLK      RCC_AHB1Periph_GPIOA
-#endif
 //--------------------------------------------------------------
 // Detect-Pin
 // aktivieren oder deaktivieren

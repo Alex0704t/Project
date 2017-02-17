@@ -32,12 +32,12 @@ void PCF8812_Port_Init(void)
 
 void PCF8812_Command(uint8_t data) {
 	PCF8812_CMD();//reset D/C for command mode
-	Send_SPI2_byte(data);//send command
+	SPI2_Send_byte(data);//send command
 }
 
 void PCF8812_Data(uint8_t data) {
 	PCF8812_DATA();//set D/C for data mode
-	Send_SPI2_DMA(&data, 1);//send data via DMA
+	SPI2_DMA_Send(&data, 1);//send data via DMA
 }
 
 void PCF8812_Set() {
@@ -410,7 +410,7 @@ void PCF8812_Handler(void) {
   if(PCF8812_buff_state == PCF8812_CHANGED/* && PCF8812_ON_flag == SET*/) {
     PCF8812_Home();//set coordinates to 0, 0
     PCF8812_DATA();//data mode
-    Send_SPI2_DMA(PCF8812_buff, PCF8812_BUFSIZ);//flush LCD buffer
+    SPI2_DMA_Send(PCF8812_buff, PCF8812_BUFSIZ);//flush LCD buffer
     PCF8812_buff_state = PCF8812_BUSY;
     }
 }

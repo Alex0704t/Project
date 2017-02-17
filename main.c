@@ -49,10 +49,16 @@ int main(void)
     }
   }
 
-#endif
+
   while(1)
   {
-//      Main_menu();
+
+
+#else
+  while(1)
+  {
+      Main_menu();
+#endif
   }
 }
 

@@ -31,6 +31,8 @@ void SPI1_Init(void);
 void SPI1_DeInit(void);
 void SPI1_DMA_Init(void);
 void SPI1_DMA_DeInit(void);
+
+uint8_t SPI_ByteExchange(SPI_TypeDef *SPIx, uint8_t data);
 void LIS3DSH_Write(uint8_t addr, uint8_t *data, uint8_t size);
 void LIS3DSH_Read(uint8_t addr, uint8_t *data, uint8_t size);
 void LIS3DSH_WriteReg(uint8_t addr, uint8_t value);
@@ -47,10 +49,10 @@ inline void LIS3DSH_WaitFlag();
 
 void SPI2_Init(void);
 void SPI2_DMA_Init(void);
-void Send_SPI2_byte(uint8_t data);
-void Send_SPI2_data(uint8_t* data, uint16_t length);
-void Send_SPI2_DMA(__IO uint8_t* data, uint16_t length);
-void Send_SPI2_buff();
+void SPI2_Send_byte(uint8_t data);
+void SPI2_Send_data(uint8_t* data, uint16_t length);
+void SPI2_DMA_Send(__IO uint8_t* data, uint16_t length);
+void SPI2_Send_buff();
 
 void I2S3_Init(void);
 void I2S3_DMA_Init(uint32_t size, int16_t *data);

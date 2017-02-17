@@ -16,11 +16,10 @@ void SPI1_Init(void) {
 	 * PA7 - SPI1_MOSI
 	 */
 	GPIOA->MODER |= 0x0000A800;//alternate function mode
-//	GPIOA->OSPEEDR &= ~0x00008C00;//low speed
   GPIOA->OSPEEDR |= 0x0000C800;//high speed
-	GPIOA->PUPDR &= ~0x0000FC00;//no pull-up & pull-down
-//	GPIOA->PUPDR |= 0x0000C400;//pull-down
-//	GPIOA->PUPDR |= GPIO_PUPDR_PUPDR6_0;//PA6 pull-up
+//	GPIOA->PUPDR &= ~0x0000FC00;//no pull-up & pull-down
+	GPIOA->PUPDR |= 0x0000C400;//pull-down
+	GPIOA->PUPDR |= GPIO_PUPDR_PUPDR6_0;//PA6 pull-up(MISO for SD card)
 
 	GPIOA->AFR[0] |= 0x55500000;//SPI1 alternate function AF5
 	SPI1->CR1 &= ~0xFFFF;//clear CR1 register
@@ -29,14 +28,12 @@ void SPI1_Init(void) {
 	SPI1->CR1 &= ~SPI_CR1_DFF;//frame 8bit
 	SPI1->CR1 &= ~SPI_CR1_CPOL;//clock polarity low
 	SPI1->CR1 &= ~SPI_CR1_CPHA;//clock 1 edge
-	SPI1->CR1 |= SPI_CR1_BR_0|SPI_CR1_BR_1;//baudrate Fpclk/16
-//	SPI1->CR1 |= SPI_CR1_BR_0|SPI_CR1_BR_2;//baudrate Fpclk/64
+	SPI1->CR1 |= SPI_CR1_BR_0|SPI_CR1_BR_2;//baudrate Fpclk/64
 	SPI1->CR1 &= ~SPI_CR1_LSBFIRST;//MSB transmitted first
 	SPI1->CR1 |= SPI_CR1_SSM;//software slave management enable
 	SPI1->CR1 |= SPI_CR1_SSI;//external slave select
 	SPI1->CR1 |= SPI_CR1_SPE;//SPI enable
 
-//	SPI1->CRCPR = 7;
 
 	NVIC_SetPriority(SPI1_IRQn, 4);
 	NVIC_EnableIRQ(SPI1_IRQn);//IRQ handler
@@ -46,6 +43,29 @@ void SPI1_DeInit(void) {
   RCC->APB2ENR &= ~RCC_APB2ENR_SPI1EN;//disable SPI1 clock
   NVIC_DisableIRQ(SPI1_IRQn);//disable IRQ handler
 }
+
+//void SPI1_Send_data(uint8_t* data, uint16_t length) {
+//  while (!(SPI2->SR & SPI_SR_TXE));
+//  while (length) {
+//    SPI2->DR = *data;
+//    data++;
+//    length--;
+//    while (!(SPI2->SR & SPI_SR_TXE));
+//    while ((SPI2->SR & SPI_SR_BSY));
+//  }
+//}
+
+uint8_t SPI_ByteExchange(SPI_TypeDef *SPIx, uint8_t data) {
+  uint8_t temp = 0;
+  while (!(SPIx->SR & SPI_SR_TXE));
+  SPIx->DR = (uint16_t)data;
+  while (!(SPIx->SR & SPI_SR_RXNE));
+  temp = SPIx->DR;
+  while ((SPIx->SR & SPI_SR_BSY));
+//  LED_TOGGLE(orange);
+  return temp;
+}
+
 
 void LIS3DSH_Write(uint8_t addr, uint8_t *data, uint8_t size) {
   uint8_t temp = 0;
@@ -231,7 +251,7 @@ void SPI2_Init(void)
 }
 
 
-void Send_SPI2_byte(uint8_t data) {
+void SPI2_Send_byte(uint8_t data) {
 	PCF8812_SEL();
 	while (!(SPI2->SR & SPI_SR_TXE));
 	SPI2->DR = data;
@@ -240,7 +260,7 @@ void Send_SPI2_byte(uint8_t data) {
 	PCF8812_UNSEL();
 }
 
-void Send_SPI2_data(uint8_t* data, uint16_t length) {
+void SPI2_Send_data(uint8_t* data, uint16_t length) {
   PCF8812_SEL();
   while (!(SPI2->SR & SPI_SR_TXE));
   while (length) {
@@ -283,14 +303,14 @@ void SPI2_DMA_Init(void) {
 
 
 
-void Send_SPI2_DMA(__IO uint8_t* data, uint16_t length) {
+void SPI2_DMA_Send(__IO uint8_t* data, uint16_t length) {
   DMA1_Stream4->M0AR = (uint32_t)data;//memory address
   DMA1_Stream4->NDTR = length;//data size
   PCF8812_buff_state = PCF8812_BUSY;
   DMA1_Stream4->CR |= DMA_SxCR_EN;//stream enable
 }
 
-void Send_SPI2_buff() {
+void SPI2_Send_buff() {
   PCF8812_SEL();
   DMA1_Stream4->M0AR = (uint32_t)PCF8812_buff;//memory address
   DMA1_Stream4->NDTR = PCF8812_BUFSIZ;//data size
