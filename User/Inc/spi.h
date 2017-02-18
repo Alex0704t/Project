@@ -33,6 +33,7 @@ void SPI1_DMA_Init(void);
 void SPI1_DMA_DeInit(void);
 
 uint8_t SPI_ByteExchange(SPI_TypeDef *SPIx, uint8_t data);
+void SPI_DataExchange(SPI_TypeDef *SPIx, uint8_t *in_data, uint8_t *out_data, uint8_t size);
 void LIS3DSH_Write(uint8_t addr, uint8_t *data, uint8_t size);
 void LIS3DSH_Read(uint8_t addr, uint8_t *data, uint8_t size);
 void LIS3DSH_WriteReg(uint8_t addr, uint8_t value);

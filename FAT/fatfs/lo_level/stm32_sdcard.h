@@ -1,10 +1,10 @@
 //--------------------------------------------------------------
-// File     : stm32_ub_usbdisk.h
+// File     : stm32_sdcard.h
 //--------------------------------------------------------------
 
 //--------------------------------------------------------------
-#ifndef __STM32F4_UB_SDCARD_H
-#define __STM32F4_UB_SDCARD_H
+#ifndef __STM32F4_SDCARD_H
+#define __STM32F4_SDCARD_H
 
 
 //--------------------------------------------------------------
@@ -16,104 +16,37 @@
 #include "user.h"
 #include "spi.h"
 
-#include "../../cmsis_lib/include/stm32f4xx_gpio.h"
-#include "../../cmsis_lib/include/stm32f4xx_rcc.h"
-#include "../../cmsis_lib/include/stm32f4xx_tim.h"
-#include "../../cmsis_lib/include/stm32f4xx_spi.h"
-#include "../../cmsis_lib/include/misc.h"
-
-
-
+#define SD_SPI_CLK_SLOW           SPI_CR1_BR_0|SPI_CR1_BR_2//baudrate Fpclk/64(656 kHz)
+#define SD_SPI_CLK_FAST           0   //baudrate Fpclk/2(21 MHz)
 //--------------------------------------------------------------
-// defines der SPI Schnittstelle
-// SPI2_CLK = 42MHz
-//--------------------------------------------------------------
-#define SD_SPI_PORT               SPI1
-#define SD_SPI_MODE               SPI_MODE_0
-#define SD_SPI_CLK_SLOW           SPI_BaudRatePrescaler_64  // 656 kHz
-#define SD_SPI_CLK_FAST           SPI_BaudRatePrescaler_2   // 21 MHz
-//--------------------------------------------------------------
-// interner PullUp fuer MISO
-// aktivieren oder deaktivieren
-//    1 = mit internem PullUp
-//    0 = ohne internem PullUp -> externer PullUp notwendig
-//--------------------------------------------------------------
-#define USE_INTERNAL_MISO_PULLUP  1  // (mit internem PullUp)
-#define SD_SPI_MISO_PORT          GPIOA
-#define SD_SPI_MISO_PIN           GPIO_Pin_6
-//--------------------------------------------------------------
-// SlaveSelect der SD-Karte (PA3)
-//--------------------------------------------------------------
-#define SD_SLAVESEL_PIN           GPIO_Pin_3
-#define SD_SLAVESEL_GPIO_PORT     GPIOA
-#define SD_SLAVESEL_GPIO_CLK      RCC_AHB1Periph_GPIOA
-//--------------------------------------------------------------
-// Detect-Pin
-// aktivieren oder deaktivieren
-//    1 = mit Detect-Pin
-//    0 = ohne Detect-Pin
-//--------------------------------------------------------------
-#define   USE_DETECT_PIN          0  // (ohne Detect-Pin)
-
-
-//--------------------------------------------------------------
-// Detect-Pin der SD-Karte (PC0)
-//--------------------------------------------------------------
-#if USE_DETECT_PIN==1
-  #define SD_DETECT_PIN           GPIO_Pin_0
-  #define SD_DETECT_GPIO_PORT     GPIOC
-  #define SD_DETECT_GPIO_CLK      RCC_AHB1Periph_GPIOC
-#endif
-
-
-
-//--------------------------------------------------------------
-// Timer für 1ms Interrupt => TIM6
-// Grundfrequenz = 2*APB1 (APB1=42MHz) => TIM_CLK=84MHz
-// TIM_Frq = TIM_CLK/(periode+1)/(vorteiler+1)
-// TIM_Frq = 1kHz => 1ms
-//--------------------------------------------------------------
-#define   SD_1MS_TIM              TIM6
-#define   SD_1MS_TIM_CLK          RCC_APB1Periph_TIM6
-#define   SD_1MS_TIM_PERIODE      999
-#define   SD_1MS_TIM_PRESCALE     83
-#define   SD_1MS_TIM_IRQ          TIM6_DAC_IRQn
-#define   SD_1MS_TIM_ISR_HANDLER  TIM6_DAC_IRQHandler
-
-
-//--------------------------------------------------------------
-// Schreibschutz
-// aktivieren oder deaktivieren
-//    1 = mit Schreibschutz
-//    0 = ohne Schreibschutz
-//--------------------------------------------------------------
-#define	USE_WRITE_PROTECTION	  0  // (ohne Schreibschutz)
+#define USE_DETECT_PIN            0  // (ohne Detect-Pin)
+#define	USE_WRITE_PROTECTION	    0  // (ohne Schreibschutz)
 
 
 
 //--------------------------------------------------------------
 /* MMC/SD command */
 //--------------------------------------------------------------
-#define CMD0	(0)        // GO_IDLE_STATE
-#define CMD1	(1)        // SEND_OP_COND (MMC)
+#define CMD0	  (0)        // GO_IDLE_STATE
+#define CMD1	  (1)        // SEND_OP_COND (MMC)
 #define	ACMD41	(0x80+41)  // SEND_OP_COND (SDC)
-#define CMD8	(8)        // SEND_IF_COND
-#define CMD9	(9)        // SEND_CSD
-#define CMD10	(10)       // SEND_CID
-#define CMD12	(12)       // STOP_TRANSMISSION
+#define CMD8	  (8)        // SEND_IF_COND
+#define CMD9	  (9)        // SEND_CSD
+#define CMD10	  (10)       // SEND_CID
+#define CMD12	  (12)       // STOP_TRANSMISSION
 #define ACMD13	(0x80+13)  // SD_STATUS (SDC)
-#define CMD16	(16)       // SET_BLOCKLEN
-#define CMD17	(17)       // READ_SINGLE_BLOCK
-#define CMD18	(18)       // READ_MULTIPLE_BLOCK
-#define CMD23	(23)       // SET_BLOCK_COUNT (MMC)
+#define CMD16	  (16)       // SET_BLOCKLEN
+#define CMD17	  (17)       // READ_SINGLE_BLOCK
+#define CMD18	  (18)       // READ_MULTIPLE_BLOCK
+#define CMD23	  (23)       // SET_BLOCK_COUNT (MMC)
 #define	ACMD23	(0x80+23)  // SET_WR_BLK_ERASE_COUNT (SDC)
-#define CMD24	(24)       // WRITE_BLOCK
-#define CMD25	(25)       // WRITE_MULTIPLE_BLOCK
-#define CMD32	(32)       // ERASE_ER_BLK_START
-#define CMD33	(33)       // ERASE_ER_BLK_END
-#define CMD38	(38)       // ERASE
-#define CMD55	(55)       // APP_CMD
-#define CMD58	(58)       // READ_OCR
+#define CMD24	  (24)       // WRITE_BLOCK
+#define CMD25	  (25)       // WRITE_MULTIPLE_BLOCK
+#define CMD32	  (32)       // ERASE_ER_BLK_START
+#define CMD33	  (33)       // ERASE_ER_BLK_END
+#define CMD38	  (38)       // ERASE
+#define CMD55	  (55)       // APP_CMD
+#define CMD58	  (58)       // READ_OCR
 #ifndef NULL
 #define NULL    0
 #endif
@@ -122,7 +55,7 @@
 
 
 //--------------------------------------------------------------
-// Globale Funktionen
+// Global Functions
 //--------------------------------------------------------------
 void SDCard_Init(void);
 uint8_t UB_SDCard_CheckMedia(void);
@@ -136,4 +69,4 @@ DRESULT MMC_disk_ioctl(BYTE cmd,void *buff);
 
 
 //--------------------------------------------------------------
-#endif // __STM32F4_UB_SDCARD_H
+#endif // __STM32F4_SDCARD_H

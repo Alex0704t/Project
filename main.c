@@ -8,9 +8,9 @@
 
 
 /* Includes ------------------------------------------------------------------*/
+#include <stm32_fatfs.h>
 #include "main.h"
 
-#include "FAT/stm32_ub_fatfs.h"
 
 /**
   * @brief  Main program.
@@ -32,7 +32,7 @@ int main(void)
     if(UB_Fatfs_Mount(MMC_0)==FATFS_OK) {
       LED_ON(blue);
       // File zum schreiben im root neu anlegen
-      if(UB_Fatfs_OpenFile(&myFile, "0:/New_File.txt", F_WR_CLEAR)==FATFS_OK) {
+      if(UB_Fatfs_OpenFile(&myFile, "0:/New_File.txt", F_WR_CLEAR) == FATFS_OK) {
           LED_ON(green);
         // ein paar Textzeilen in das File schreiben
         UB_Fatfs_WriteString(&myFile,"FATFS in SPI-Mode");

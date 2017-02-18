@@ -28,12 +28,13 @@ void SPI1_Init(void) {
 	SPI1->CR1 &= ~SPI_CR1_DFF;//frame 8bit
 	SPI1->CR1 &= ~SPI_CR1_CPOL;//clock polarity low
 	SPI1->CR1 &= ~SPI_CR1_CPHA;//clock 1 edge
-	SPI1->CR1 |= SPI_CR1_BR_0|SPI_CR1_BR_2;//baudrate Fpclk/64
+
+	SPI1->CR1 &= ~SPI_CR1_BR;//clear baudrate bits
+//	SPI1->CR1 |= SPI_CR1_BR_0/*|SPI_CR1_BR_1*/|SPI_CR1_BR_2;//baudrate Fpclk/64
 	SPI1->CR1 &= ~SPI_CR1_LSBFIRST;//MSB transmitted first
 	SPI1->CR1 |= SPI_CR1_SSM;//software slave management enable
 	SPI1->CR1 |= SPI_CR1_SSI;//external slave select
 	SPI1->CR1 |= SPI_CR1_SPE;//SPI enable
-
 
 	NVIC_SetPriority(SPI1_IRQn, 4);
 	NVIC_EnableIRQ(SPI1_IRQn);//IRQ handler
@@ -44,21 +45,10 @@ void SPI1_DeInit(void) {
   NVIC_DisableIRQ(SPI1_IRQn);//disable IRQ handler
 }
 
-//void SPI1_Send_data(uint8_t* data, uint16_t length) {
-//  while (!(SPI2->SR & SPI_SR_TXE));
-//  while (length) {
-//    SPI2->DR = *data;
-//    data++;
-//    length--;
-//    while (!(SPI2->SR & SPI_SR_TXE));
-//    while ((SPI2->SR & SPI_SR_BSY));
-//  }
-//}
-
 uint8_t SPI_ByteExchange(SPI_TypeDef *SPIx, uint8_t data) {
   uint8_t temp = 0;
   while (!(SPIx->SR & SPI_SR_TXE));
-  SPIx->DR = (uint16_t)data;
+  SPIx->DR = data;
   while (!(SPIx->SR & SPI_SR_RXNE));
   temp = SPIx->DR;
   while ((SPIx->SR & SPI_SR_BSY));
@@ -66,8 +56,41 @@ uint8_t SPI_ByteExchange(SPI_TypeDef *SPIx, uint8_t data) {
   return temp;
 }
 
+void SPI_DataExchange(SPI_TypeDef *SPIx, uint8_t *in_data, uint8_t *out_data, uint8_t size) {
+#if 1
+  while (size--) {
+    while (!(SPIx->SR & SPI_SR_TXE));
+    if (in_data != NULL)
+      SPIx->DR = *in_data;
+    else
+      SPIx->DR = 0xFF;
+    while (!(SPIx->SR & SPI_SR_RXNE));
+    *out_data = SPIx->DR;
+    while ((SPIx->SR & SPI_SR_BSY));
+    in_data++;
+    out_data++;
+//    LED_TOGGLE(orange);
+  }
+#else
+  do {
+      while (!(SPIx->SR & SPI_SR_TXE));
+      if (in_data != NULL)
+        SPIx->DR = *in_data;
+      else
+        SPIx->DR = 0xFF;
+      while (!(SPIx->SR & SPI_SR_RXNE));
+      *out_data = SPIx->DR;
+      while ((SPIx->SR & SPI_SR_BSY));
+      in_data++;
+      out_data++;
+//      LED_TOGGLE(orange);
+  } while (size--);
+#endif
+}
+
 
 void LIS3DSH_Write(uint8_t addr, uint8_t *data, uint8_t size) {
+#if 1
   uint8_t temp = 0;
   LIS3DSH_CS_ON();
   while (!(SPI1->SR & SPI_SR_TXE));
@@ -81,6 +104,9 @@ void LIS3DSH_Write(uint8_t addr, uint8_t *data, uint8_t size) {
     temp = SPI1->DR;
   }
   LIS3DSH_CS_OFF();
+#else
+
+#endif
 }
 
 void LIS3DSH_Read(uint8_t addr, uint8_t *data, uint8_t size) {

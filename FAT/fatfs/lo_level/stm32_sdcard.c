@@ -347,28 +347,25 @@ inline void SDCard_CS_On(void) {
 //--------------------------------------------------------------
 // SPI-Frq=Slow
 //--------------------------------------------------------------
-void FCLK_SLOW(void)
-{
+void FCLK_SLOW(void) {
   uint16_t tmpreg = 0;
-
-  tmpreg = SD_SPI_PORT->CR1; 
-  tmpreg &= ~0x38;
-  tmpreg |= SD_SPI_CLK_SLOW;
-  SD_SPI_PORT->CR1 = tmpreg;
+  tmpreg = SPI1->CR1;
+  tmpreg &= ~SPI_CR1_BR;
+  tmpreg |= SD_SPI_CLK_FAST;
+//  tmpreg |= SD_SPI_CLK_SLOW;
+  SPI1->CR1 = tmpreg;
 }
 
 
 //--------------------------------------------------------------
 // SPI-Frq=Fast
 //--------------------------------------------------------------
-void FCLK_FAST(void)
-{
+void FCLK_FAST(void) {
   uint16_t tmpreg = 0;
-
-  tmpreg = SD_SPI_PORT->CR1; 
-  tmpreg &= ~0x38;
+  tmpreg = SPI1->CR1;
+  tmpreg &= ~SPI_CR1_BR;
   tmpreg |= SD_SPI_CLK_FAST;
-  SD_SPI_PORT->CR1 = tmpreg;  
+  SPI1->CR1 = tmpreg;
 }
 
 
@@ -395,7 +392,13 @@ uint8_t SD_Detect(void) {
 // data : Data to send
 //--------------------------------------------------------------
 static BYTE xchg_spi(BYTE data) {
+#if 0
   return SPI_ByteExchange(SPI1, data);
+#else
+  uint8_t temp = 0;
+  SPI_DataExchange(SPI1, &data, &temp, 1);
+  return temp;
+#endif
 }
 //--------------------------------------------------------------
 // Receive multiple byte
@@ -403,14 +406,17 @@ static BYTE xchg_spi(BYTE data) {
 // btr : Number of bytes to receive (even number)
 //--------------------------------------------------------------
 static void rcvr_spi_multi(BYTE *buff, UINT btr) {
+#if 0
+  SPI_DataExchange(SPI1, NULL, buff, btr);
+#else
   BYTE b;
   do {
-//    b = UB_SPI1_SendByte(0xFF);
     b = SPI_ByteExchange(SPI1, 0xFF);
-    *buff=b;
+    *buff = b;
     buff++;
     btr--;
   } while (btr != 0);
+#endif
 }
 
 
@@ -421,6 +427,9 @@ static void rcvr_spi_multi(BYTE *buff, UINT btr) {
 // btx : Number of bytes to send (even number)
 //--------------------------------------------------------------
 static void xmit_spi_multi(const BYTE *buff, UINT btx) {
+#if 0
+  SPI_DataExchange(SPI1, buff, NULL, btx);
+#else
   BYTE b;
   do {
     b = *buff;
@@ -428,6 +437,7 @@ static void xmit_spi_multi(const BYTE *buff, UINT btx) {
     buff++;
     btx--;
   } while (btx != 0);
+#endif
 }
 #endif
 
