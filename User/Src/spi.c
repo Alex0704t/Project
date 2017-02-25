@@ -16,78 +16,217 @@ void SPI1_Init(void) {
 	 * PA7 - SPI1_MOSI
 	 */
 	GPIOA->MODER |= 0x0000A800;//alternate function mode
-  GPIOA->OSPEEDR |= 0x0000C800;//high speed
-//	GPIOA->PUPDR &= ~0x0000FC00;//no pull-up & pull-down
-	GPIOA->PUPDR |= 0x0000C400;//pull-down
+  GPIOA->OSPEEDR |= 0x0000A800;//high speed
+	GPIOA->PUPDR &= ~0x0000FC00;//no pull-up & pull-down
+//	GPIOA->PUPDR |= 0x0000A800;//pull-down
+
+  GPIOA->PUPDR &= ~GPIO_PUPDR_PUPDR6;//clear PA6 PUPDR
 	GPIOA->PUPDR |= GPIO_PUPDR_PUPDR6_0;//PA6 pull-up(MISO for SD card)
-
 	GPIOA->AFR[0] |= 0x55500000;//SPI1 alternate function AF5
-	SPI1->CR1 &= ~0xFFFF;//clear CR1 register
+
+	SPI1->CR1 = 0;//clear CR1 register
+	/**
+ * 000 Fpclk/2
+ * 001 Fpclk/4
+ * 010 Fpclk/8
+ * 011 Fpclk/16
+ * 100 Fpclk/32
+ * 101 Fpclk/64
+ * 110 Fpclk/128
+ * 111 Fpclk/256
+ */
+/** select baudrate ***********************************************************/
+//	SPI1->CR1 |= SPI_CR1_BR_2;
+//	SPI1->CR1 |= SPI_CR1_BR_1;
+//	SPI1->CR1 |= SPI_CR1_BR_0;
+/** select clock phase & polarity *********************************************/
+//	SPI1->CR1 |= SPI_CR1_CPOL;//CPOL = 1
+//	SPI1->CR1 |= SPI_CR1_CPHA;//CPHA = 1
+/** select 8 bit or 16 bit frame **********************************************/
+//	SPI1->CR1 |= SPI_CR1_DFF;//frame 16bit
+/** select MSB or LSB transmitted first ***************************************/
+//	SPI1->CR1 |= SPI_CR1_LSBFIRST;//LSB transmitted first
+/** select slave or master mode ***********************************************/
 	SPI1->CR1 |= SPI_CR1_MSTR;//master mode
-	SPI1->CR1 &= ~SPI_CR1_BIDIMODE;//2 line mode
-	SPI1->CR1 &= ~SPI_CR1_DFF;//frame 8bit
-	SPI1->CR1 &= ~SPI_CR1_CPOL;//clock polarity low
-	SPI1->CR1 &= ~SPI_CR1_CPHA;//clock 1 edge
-
-	SPI1->CR1 &= ~SPI_CR1_BR;//clear baudrate bits
-//	SPI1->CR1 |= SPI_CR1_BR_0/*|SPI_CR1_BR_1*/|SPI_CR1_BR_2;//baudrate Fpclk/64
-	SPI1->CR1 &= ~SPI_CR1_LSBFIRST;//MSB transmitted first
+/** select 2 or 1 data line mode **********************************************/
+//	SPI1->CR1 |= SPI_CR1_BIDIMODE;//1 line mode
+/** receive or transmit enable ************************************************/
+//  SPI1->CR1 |= SPI_CR1_BIDIOE;//output enable (transmit only)
+/** enable slave software slave management ************************************/
 	SPI1->CR1 |= SPI_CR1_SSM;//software slave management enable
+/** enable external slave select **********************************************/
 	SPI1->CR1 |= SPI_CR1_SSI;//external slave select
-	SPI1->CR1 |= SPI_CR1_SPE;//SPI enable
 
-	NVIC_SetPriority(SPI1_IRQn, 4);
-	NVIC_EnableIRQ(SPI1_IRQn);//IRQ handler
+	SPI1->CR1 |= SPI_CR1_SPE;//SPI enable
 }
 
 void SPI1_DeInit(void) {
   RCC->APB2ENR &= ~RCC_APB2ENR_SPI1EN;//disable SPI1 clock
+  SPI1->CR1 &= ~SPI_CR1_SPE;//SPI1 disable
   NVIC_DisableIRQ(SPI1_IRQn);//disable IRQ handler
 }
 
-uint8_t SPI_ByteExchange(SPI_TypeDef *SPIx, uint8_t data) {
-  uint8_t temp = 0;
-  while (!(SPIx->SR & SPI_SR_TXE));
-  SPIx->DR = data;
-  while (!(SPIx->SR & SPI_SR_RXNE));
-  temp = SPIx->DR;
-  while ((SPIx->SR & SPI_SR_BSY));
-//  LED_TOGGLE(orange);
-  return temp;
+uint8_t SPI1_TxRxByte(uint8_t data) {
+  while (!(SPI1->SR & SPI_SR_TXE));
+  SPI1->DR = data;
+  while (!(SPI1->SR & SPI_SR_RXNE));
+  return SPI1->DR;
 }
 
-void SPI_DataExchange(SPI_TypeDef *SPIx, uint8_t *in_data, uint8_t *out_data, uint8_t size) {
-#if 1
+void SPI1_TxRx(uint8_t *tx_data, uint8_t *rx_data, uint8_t size) {
+#if 0
   while (size--) {
-    while (!(SPIx->SR & SPI_SR_TXE));
-    if (in_data != NULL)
-      SPIx->DR = *in_data;
+    while (!(SPI1->SR & SPI_SR_TXE));
+    if (tx_data != NULL)
+      SPI1->DR = *tx_data;
     else
-      SPIx->DR = 0xFF;
-    while (!(SPIx->SR & SPI_SR_RXNE));
-    *out_data = SPIx->DR;
-    while ((SPIx->SR & SPI_SR_BSY));
-    in_data++;
-    out_data++;
+      SPI1->DR = 0xFF;
+    while (!(SPI1->SR & SPI_SR_RXNE));
+    *rx_data = SPI1->DR;
+//    while ((SPI1->SR & SPI_SR_BSY));
+    tx_data++;
+    rx_data++;
 //    LED_TOGGLE(orange);
   }
 #else
-  do {
-      while (!(SPIx->SR & SPI_SR_TXE));
-      if (in_data != NULL)
-        SPIx->DR = *in_data;
-      else
-        SPIx->DR = 0xFF;
-      while (!(SPIx->SR & SPI_SR_RXNE));
-      *out_data = SPIx->DR;
-      while ((SPIx->SR & SPI_SR_BSY));
-      in_data++;
-      out_data++;
-//      LED_TOGGLE(orange);
-  } while (size--);
+//    if(!tx_data)
+//      for(uint8_t i = 0; i < size; i++)
+//        rx_data[i] = SPI1_ByteExchange(0xFF);
+//    else if(!rx_data)
+//      for(uint8_t i = 0; i < size; i++)
+//        SPI1_ByteExchange(tx_data[i]);
+//    else
+      for(uint8_t i = 0; i < size; i++)
+        rx_data[i] = SPI1_TxRxByte(tx_data[i]);
+//  while(size--) {
+//     *rx_data++ = SPI1_ByteExchange(*tx_data++);
+//     rx_data++;
+//     tx_data++;
+//     size--;
+//  }
 #endif
 }
 
+#if 0
+/**
+  * @brief  Transmit and Receive an amount of data in blocking mode.
+  * @param  pTxData: pointer to transmission data buffer
+  * @param  pRxData: pointer to reception data buffer
+  * @param  Size: amount of data to be sent and received
+  * @param  Timeout: Timeout duration
+  * @retval HAL status
+  */
+uint8_t SPI1_TxRx(uint8_t *pTxData, uint8_t *pRxData, uint16_t Size, uint32_t Timeout)
+{
+#if (USE_SPI_CRC != 0U)
+  __IO uint16_t tmpreg1 = 0U;
+#endif /* USE_SPI_CRC */
+  uint32_t tickstart = 0U;
+  /* Variable used to alternate Rx and Tx during transfer */
+  uint32_t txallowed = 1U;
+  uint8_t errorcode = 0;
+
+  /* Init tickstart for timeout management*/
+  tickstart = GetTick();
+
+
+  /* Set the transaction information */
+  hspi->ErrorCode   = HAL_SPI_ERROR_NONE;
+  hspi->pRxBuffPtr  = (uint8_t *)pRxData;
+  hspi->RxXferCount = Size;
+  hspi->RxXferSize  = Size;
+  hspi->pTxBuffPtr  = (uint8_t *)pTxData;
+  hspi->TxXferCount = Size;
+  hspi->TxXferSize  = Size;
+
+  /*Init field not used in handle to zero */
+  hspi->RxISR       = NULL;
+  hspi->TxISR       = NULL;
+
+#if (USE_SPI_CRC != 0U)
+  /* Reset CRC Calculation */
+  if(hspi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLE)
+  {
+    SPI_RESET_CRC(hspi);
+  }
+#endif /* USE_SPI_CRC */
+
+    while((hspi->TxXferCount > 0U) || (hspi->RxXferCount > 0U))
+    {
+      /* check TXE flag */
+      if(txallowed && (hspi->TxXferCount > 0U) && (__HAL_SPI_GET_FLAG(hspi, SPI_FLAG_TXE)))
+      {
+        *(__IO uint8_t *)&SPI1->DR = (*pTxData++);
+        hspi->TxXferCount--;
+        /* Next Data is a reception (Rx). Tx not allowed */
+        txallowed = 0U;
+
+#if (USE_SPI_CRC != 0U)
+        /* Enable CRC Transmission */
+        if((hspi->TxXferCount == 0U) && (hspi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLE))
+        {
+          SET_BIT(SPI1->CR1, SPI_CR1_CRCNEXT);
+        }
+#endif /* USE_SPI_CRC */
+      }
+
+      /* Wait until RXNE flag is reset */
+      if((hspi->RxXferCount > 0U) && (__HAL_SPI_GET_FLAG(hspi, SPI_FLAG_RXNE)))
+      {
+        (*(uint8_t *)pRxData++) = SPI1->DR;
+        hspi->RxXferCount--;
+        /* Next Data is a Transmission (Tx). Tx is allowed */
+        txallowed = 1U;
+      }
+      if((Timeout != HAL_MAX_DELAY) && ((HAL_GetTick()-tickstart) >=  Timeout))
+      {
+          return 1;
+      }
+    }
+
+#if (USE_SPI_CRC != 0U)
+  /* Read CRC from DR to close CRC calculation process */
+  if(hspi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLE)
+  {
+    /* Wait until TXE flag */
+    if(SPI_WaitFlagStateUntilTimeout(hspi, SPI_FLAG_RXNE, SET, Timeout, tickstart) != HAL_OK)
+    {
+      /* Error on the CRC reception */
+      SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_CRC);
+      return 1;
+    }
+    /* Read CRC */
+    tmpreg1 = SPI1->DR;
+    /* To avoid GCC warning */
+    UNUSED(tmpreg1);
+  }
+
+  /* Check if CRC error occurred */
+  if(__HAL_SPI_GET_FLAG(hspi, SPI_FLAG_CRCERR))
+  {
+    SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_CRC);
+    /* Clear CRC Flag */
+    __HAL_SPI_CLEAR_CRCERRFLAG(hspi);
+
+    errorcode = 1;
+  }
+#endif /* USE_SPI_CRC */
+
+  /* Wait until TXE flag */
+  if(SPI_WaitFlagStateUntilTimeout(hspi, SPI_FLAG_TXE, SET, Timeout, tickstart) != HAL_OK)
+  {
+      return 1;
+  }
+
+  /* Check Busy flag */
+  if(SPI_CheckFlag_BSY(hspi, Timeout, tickstart) != HAL_OK)
+  {
+    return 1;
+  }
+
+  return errorcode;
+}
+#endif
 
 void LIS3DSH_Write(uint8_t addr, uint8_t *data, uint8_t size) {
 #if 1
@@ -105,11 +244,17 @@ void LIS3DSH_Write(uint8_t addr, uint8_t *data, uint8_t size) {
   }
   LIS3DSH_CS_OFF();
 #else
-
+  LIS3DSH_CS_ON();
+  SPI1_TxRxByte(addr);
+  while (size--) {
+    SPI1_TxRxByte(*data++);
+  }
+  LIS3DSH_CS_OFF();
 #endif
 }
 
 void LIS3DSH_Read(uint8_t addr, uint8_t *data, uint8_t size) {
+#if 0
   uint8_t temp = 0;
   addr |= 0x80;
   LIS3DSH_CS_ON();
@@ -124,6 +269,14 @@ void LIS3DSH_Read(uint8_t addr, uint8_t *data, uint8_t size) {
     *data++ = SPI1->DR;
   }
   LIS3DSH_CS_OFF();
+#else
+  LIS3DSH_CS_ON();
+  SPI1_TxRxByte(addr|0x80);
+  while (size--) {
+      *data++ = SPI1_TxRxByte(0xFF);
+  }
+  LIS3DSH_CS_OFF();
+#endif
 }
 
 void LIS3DSH_WriteReg(uint8_t addr, uint8_t value) {
@@ -198,7 +351,6 @@ void SPI1_DMA_Init(void) {
 	NVIC_EnableIRQ(DMA2_Stream3_IRQn);//IRQ handler
 	NVIC_SetPriority(DMA2_Stream0_IRQn, 4);
 	NVIC_EnableIRQ(DMA2_Stream0_IRQn);//IRQ handler
-
 }
 
 void SPI1_DMA_DeInit(void) {
@@ -209,20 +361,44 @@ void SPI1_DMA_DeInit(void) {
   SPI1_DeInit();
 }
 
-__IO uint8_t lis3dsh_data_ready;
+__IO uint8_t SPI1_data_ready;
 __IO uint8_t lis3dsh_ax_data[LIS3DSH_BUFSIZE];
 uint8_t lis3dsh_tx_dummy[LIS3DSH_BUFSIZE] = {OUT_DATA|0x80, 0, 0, 0, 0, 0, 0};
+uint8_t *pTx_SPI1_data, *pRx_SPI1_data;
+
+void SPI1_DMA_TxRx(uint8_t *tx_data, uint8_t *rx_data, uint16_t size) {
+//  uint8_t tx_buf[size], rx_buf[size];
+//  tx_data = tx_buf;
+//  rx_data = rx_buf;
+//  for (uint8_t i = 0; i < size; i++) {
+//     tx_buf[i] = tx_data[i];
+//  }
+
+    DMA2_Stream0->M0AR = (uint32_t)(rx_data);//memory address
+    DMA2_Stream0->NDTR = size;//data size
+    DMA2_Stream3->M0AR = (uint32_t)(tx_data);//memory address
+    DMA2_Stream3->NDTR = size;//data size
+
+//  if ((SPI1_DMA_mode_flag & SPI1_DMA_LIS3DSH) != SPI1_DMA_LIS3DSH)
+//    SPI1_DMA_mode_flag = SPI1_DMA_LIS3DSH;//set DMA mode flag if need
+  SPI1_ResetFlag();//
+//  LIS3DSH_CS_ON();
+    DMA2_Stream0->CR |= DMA_SxCR_EN;//stream enable
+    DMA2_Stream3->CR |= DMA_SxCR_EN;//stream enable
+  SPI1_WaitFlag();
+//  for (uint8_t i = 0; i < size; i++) {
+//     rx_data[i] = rx_buf[i];
+//  }
+}
 
 void LIS3DSH_GetAxis() {
 	DMA2_Stream0->M0AR = (uint32_t)(lis3dsh_ax_data);//memory address
-	DMA2_Stream0->CR |= DMA_SxCR_TCIE;//transfer complete interrupt enable
 	DMA2_Stream0->NDTR = LIS3DSH_BUFSIZE;//data size
 	DMA2_Stream3->M0AR = (uint32_t)(lis3dsh_tx_dummy);//memory address
-	DMA2_Stream3->CR |= DMA_SxCR_TCIE;//transfer complete interrupt enable
 	DMA2_Stream3->NDTR = LIS3DSH_BUFSIZE;//data size
 	if ((SPI1_DMA_mode_flag & SPI1_DMA_LIS3DSH) != SPI1_DMA_LIS3DSH)
-	  SPI1_DMA_mode_flag |= SPI1_DMA_LIS3DSH;//set DMA mode flag if need
-	LIS3DSH_ResetFlag();//
+	  SPI1_DMA_mode_flag = SPI1_DMA_LIS3DSH;//set DMA mode flag if need
+	SPI1_ResetFlag();//
 	LIS3DSH_CS_ON();
   DMA2_Stream0->CR |= DMA_SxCR_EN;//stream enable
 	DMA2_Stream3->CR |= DMA_SxCR_EN;//stream enable
@@ -233,22 +409,21 @@ inline void LIS3DSH_GetData(uint8_t *data) {
     data[i - 1] = lis3dsh_ax_data[i];
 }
 
-inline void LIS3DSH_SetFlag() {
-  lis3dsh_data_ready = 0;
+inline void SPI1_SetFlag() {
+  SPI1_data_ready = 1;
 }
 
-inline void LIS3DSH_ResetFlag() {
-  lis3dsh_data_ready = 1;
+inline void SPI1_ResetFlag() {
+  SPI1_data_ready = 0;
 }
 
-inline void LIS3DSH_WaitFlag() {
-  while (!lis3dsh_data_ready);
+inline void SPI1_WaitFlag() {
+  while (!SPI1_data_ready);
 }
 
 extern volatile char PCF8812_buff[PCF8812_BUFSIZ];
 
-void SPI2_Init(void)
-{
+void SPI2_Init(void) {
 	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN;
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
 	/*
@@ -256,47 +431,70 @@ void SPI2_Init(void)
 	 * PB15 - SPI2_MOSI Pin3 LCD (SDIN)
 	 */
 	GPIOB->MODER |= 0x88000000;//alternate function mode
-	GPIOB->OSPEEDR &= ~0xCC000000;//low speed
-	GPIOB->PUPDR &= ~0xCC000000;//no pull-up & pull-down
+	GPIOB->OSPEEDR |= 0x88000000;//high speed
+//	GPIOB->PUPDR &= ~0xCC000000;//no pull-up & pull-down
+	GPIOB->PUPDR |= 0x88000000;//high speed
 	GPIOB->AFR[1] |= 0x50500000;//SPI2 alternate function AF5
-	SPI2->CR1 = 0;//clear CR1 register
-	SPI2->CR1 |= SPI_CR1_MSTR;//master mode
-	SPI2->CR1 |= SPI_CR1_BIDIMODE;//1-line bidirectional data mode selected
-	SPI2->CR1 |= SPI_CR1_BIDIOE;//output enable (transmit only)
-	SPI2->CR1 &= ~SPI_CR1_DFF;//frame 8bit
-	SPI2->CR1 &= ~SPI_CR1_CPOL;//clock polarity low
-	SPI2->CR1 &= ~SPI_CR1_CPHA;//clock 1 edge
-	SPI2->CR1 &= ~SPI_CR1_BR;//baudrate Fpclk/2
-	SPI2->CR1 &= ~SPI_CR1_LSBFIRST;//MSB transmitted first
-	SPI2->CR1 |= SPI_CR1_SSM;//software slave management enable
-	SPI2->CR1 |= SPI_CR1_SSI;//external slave select
-	SPI2->CR1 |= SPI_CR1_SPE;//SPI enable
 
-	NVIC_SetPriority(SPI2_IRQn, 4);
-	NVIC_EnableIRQ(SPI2_IRQn);//IRQ handler
+  SPI2->CR1 = 0;//clear CR1 register
+  /**
+ * 000 Fpclk/2
+ * 001 Fpclk/4
+ * 010 Fpclk/8
+ * 011 Fpclk/16
+ * 100 Fpclk/32
+ * 101 Fpclk/64
+ * 110 Fpclk/128
+ * 111 Fpclk/256
+ */
+/** select baudrate ***********************************************************/
+  SPI2->CR1 |= SPI_CR1_BR_2;
+  SPI2->CR1 |= SPI_CR1_BR_1;
+  SPI2->CR1 |= SPI_CR1_BR_0;
+/** select clock phase & polarity *********************************************/
+//  SPI2->CR1 |= SPI_CR1_CPOL;//CPOL = 1
+//  SPI2->CR1 |= SPI_CR1_CPHA;//CPHA = 1
+/** select 8 bit or 16 bit frame **********************************************/
+//  SPI2->CR1 |= SPI_CR1_DFF;//frame 16bit
+/** select MSB or LSB transmitted first ***************************************/
+//  SPI2->CR1 |= SPI_CR1_LSBFIRST;//LSB transmitted first
+/** select slave or master mode ***********************************************/
+  SPI2->CR1 |= SPI_CR1_MSTR;//master mode
+/** select 2 or 1 data line mode **********************************************/
+  SPI1->CR1 |= SPI_CR1_BIDIMODE;//1 line mode
+/** receive or transmit enable ************************************************/
+  SPI2->CR1 |= SPI_CR1_BIDIOE;//output enable (transmit only)
+/** enable slave software slave management ************************************/
+  SPI2->CR1 |= SPI_CR1_SSM;//software slave management enable
+/** enable external slave select **********************************************/
+  SPI2->CR1 |= SPI_CR1_SSI;//external slave select
+
+  SPI2->CR1 |= SPI_CR1_SPE;//SPI enable
 }
 
 
 void SPI2_Send_byte(uint8_t data) {
-	PCF8812_SEL();
+	PCF8812_CS_ON();
 	while (!(SPI2->SR & SPI_SR_TXE));
 	SPI2->DR = data;
-	while (!(SPI2->SR & SPI_SR_TXE));
+  while (!(SPI2->SR & SPI_SR_TXE));
 	while ((SPI2->SR & SPI_SR_BSY));
-	PCF8812_UNSEL();
+	PCF8812_CS_OFF();
 }
 
 void SPI2_Send_data(uint8_t* data, uint16_t length) {
-  PCF8812_SEL();
-  while (!(SPI2->SR & SPI_SR_TXE));
+  PCF8812_CS_ON();
   while (length) {
+    while (!(SPI2->SR & SPI_SR_TXE));
     SPI2->DR = *data;
     data++;
     length--;
-    while (!(SPI2->SR & SPI_SR_TXE));
-    while ((SPI2->SR & SPI_SR_BSY));
+//    while (!(SPI2->SR & SPI_SR_TXE));
+//    while ((SPI2->SR & SPI_SR_BSY));
   }
-  PCF8812_UNSEL();
+  while (!(SPI2->SR & SPI_SR_TXE));
+  while ((SPI2->SR & SPI_SR_BSY));
+  PCF8812_CS_OFF();
 }
 
 
@@ -329,15 +527,15 @@ void SPI2_DMA_Init(void) {
 
 
 
-void SPI2_DMA_Send(__IO uint8_t* data, uint16_t length) {
+void SPI2_DMA_Tx(__IO uint8_t* data, uint16_t size) {
   DMA1_Stream4->M0AR = (uint32_t)data;//memory address
-  DMA1_Stream4->NDTR = length;//data size
+  DMA1_Stream4->NDTR = size;//data size
   PCF8812_buff_state = PCF8812_BUSY;
   DMA1_Stream4->CR |= DMA_SxCR_EN;//stream enable
 }
 
 void SPI2_Send_buff() {
-  PCF8812_SEL();
+  PCF8812_CS_ON();
   DMA1_Stream4->M0AR = (uint32_t)PCF8812_buff;//memory address
   DMA1_Stream4->NDTR = PCF8812_BUFSIZ;//data size
   PCF8812_buff_state = PCF8812_BUSY;

@@ -90,7 +90,7 @@ void USB_Echo() {
       Write_to_USB(buffer);
       strncpy(str, buffer, PCF8812_STR_SIZ);
     }
-    PCF8812_Putline_Center(str, 4);
+    PCF8812_String_Center(str, 4);
     if (Button_Get(user_button))
       return;
     PCF8812_DELAY;
@@ -201,8 +201,8 @@ void USB_Ctrl() {
         no_resp = 1;
     }
     if (no_resp)
-      PCF8812_Putline_Center(msg, 3);
-    PCF8812_Putline_Center(str, 4);
+      PCF8812_String_Center(msg, 3);
+    PCF8812_String_Center(str, 4);
     if (Button_Get(user_button))
       return;
     PCF8812_DELAY;

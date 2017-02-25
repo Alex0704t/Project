@@ -223,5 +223,4 @@ void LIS3DSH_MovDetEn(lis3dsh_scale scale, lis3dsh_data_rate rate);
 void LIS3DSH_View();
 void LIS3DSH_IntHandler();
 
-
 #endif /* USER_ACCELERO_H_ */

@@ -20,8 +20,8 @@
 #define PCF8812_POW_OFF()           GPIOD->BSRR = GPIO_BSRR_BR_8
 #define PCF8812_CMD()               GPIOD->BSRR = GPIO_BSRR_BR_9
 #define PCF8812_DATA()              GPIOD->BSRR = GPIO_BSRR_BS_9
-#define PCF8812_SEL()               GPIOD->BSRR = GPIO_BSRR_BR_10
-#define PCF8812_UNSEL()             GPIOD->BSRR = GPIO_BSRR_BS_10
+#define PCF8812_CS_ON()             GPIOD->BSRR = GPIO_BSRR_BR_10
+#define PCF8812_CS_OFF()            GPIOD->BSRR = GPIO_BSRR_BS_10
 #define PCF8812_RES_ON()            GPIOD->BSRR = GPIO_BSRR_BR_11
 #define PCF8812_RES_OFF()           GPIOD->BSRR = GPIO_BSRR_BS_11
 #define PCF8812_LIGHT_ON()          GPIOB->BSRR = GPIO_BSRR_BS_14
@@ -72,7 +72,7 @@
 #define VOP_SET         0x80//Vlcd programming 1 V6 V5 V4 V3 V2 V1 V0
 
 
-#define PCF8812_VIEW_VAR(var, line) {uint8_t s[PCF8812_STR_SIZ];\
+#define PCF8812_VIEW_VAR(var, line) {char s[PCF8812_STR_SIZ];\
                                 snprintf(s, PCF8812_STR_SIZ, #var ":%ld", var);\
                                 PCF8812_Putline(s, line);}
 
@@ -304,7 +304,7 @@ static const char lcd_font[][5] =
   { 0x08, 0x54, 0x34, 0x14, 0x7C }   // ÿ 255
 };
 
-typedef const uint8_t symb_ar[5];
+typedef const char symb_ar[5];
 
 static symb_ar arrow_up        = { 0x04, 0x02, 0x7F, 0x02, 0x04 };
 static symb_ar arrow_down      = { 0x10, 0x20, 0x7F, 0x20, 0x10 };
@@ -331,14 +331,14 @@ void PCF8812_Clr_Line(uint8_t line);
 void PCF8812_Inv_Line(uint8_t line);
 uint8_t PCF8812_Decode(uint8_t c);
 void PCF8812_Set_Char(uint8_t c, uint8_t line, uint8_t col);
-void PCF8812_Set_Symb(symb_ar symb, uint8_t line, uint8_t col);
+inline void PCF8812_Putchar(const char c[5], uint8_t line, uint8_t col);
 void PCF8812_Inv_Char(uint8_t line, uint8_t col);
 void PCF8812_Error(char* s);
 void PCF8812_Message(char* s);
 void PCF8812_Title(char* s);
-void PCF8812_Putline(char* s, uint8_t line);
-void PCF8812_Putline_Center(char* s, uint8_t line);
-void PCF8812_Putline_Right(char* s, uint8_t line);
+void PCF8812_String(char* s, uint8_t line);
+void PCF8812_String_Center(char* s, uint8_t line);
+void PCF8812_String_Right(char* s, uint8_t line);
 void PCF8812_SValue(char* name, int32_t value, char* unit, uint8_t line);
 void PCF8812_UValue(char* name, uint32_t value, char* unit, uint8_t line);
 void PCF8812_HValue(char* name, uint32_t value, uint8_t line);
@@ -367,5 +367,17 @@ uint32_t PCF8812_Set_Param(Par_list* list);
 void PCF8812_On();
 void PCF8812_Off();
 void PCF8812_Count();
+
+void PCF8812_Print(char *s);
+/** from stdio.h #if __GNU_VISIBLE */
+/** ToDo fixed implicit definition asprintf() & uncorrect print float numbers*/
+int _EXFUN(asprintf, (char **__restrict, const char *__restrict, ...)
+               _ATTRIBUTE ((__format__ (__printf__, 2, 3))));
+
+#define PCF8812_Printf(...)  do {\
+                                  char *s;\
+                                  asprintf(&s, __VA_ARGS__);\
+                                  PCF8812_Print(s);\
+                                  } while (0)
 
 #endif /* PCF8812_H_ */

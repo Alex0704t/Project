@@ -8,7 +8,7 @@
 #include "accelero.h"
 
 //axis_s lis3dsh_axis;
-__IO uint8_t lis3dsh_data_ready = 0;
+__IO uint8_t SPI1_data_ready = 0;
 extern uint8_t  SPI1_DMA_mode_flag;
 
 void LIS3DSH_CS_Init(void) {
@@ -60,6 +60,7 @@ void LIS3DSH_En(lis3dsh_scale scale, lis3dsh_data_rate rate) {
 	if (LIS3DSH_CheckReg(WHO_I_AM, I_AM_LIS3DSH)) {
 	  LED_ON(green);
 	  LED_ON(red);
+	  PCF8812_String("I'm LIS3DSH", 1);
     delay_ms(50);
     LED_OFF(green);
     LED_OFF(red);
@@ -69,6 +70,7 @@ void LIS3DSH_En(lis3dsh_scale scale, lis3dsh_data_rate rate) {
 	if (LIS3DSH_CheckReg(CTRL_REG4, rate|CTRL_REG4_AXIS)) {
     LED_ON(orange);
     LED_ON(blue);
+    PCF8812_String("enable", 1);
     delay_ms(50);
     LED_OFF(orange);
     LED_OFF(blue);
@@ -150,12 +152,12 @@ void LIS3DSH_View() {
   int32_t arr[3] = {};
   Button_Set_Name(user_button, "EXIT");
   while(1) {
-      PCF8812_Clear();
-      PCF8812_Title("LIS3DSH");
-      if (Check_delay_ms(330)) {
+    PCF8812_Clear();
+    PCF8812_Title("LIS3DSH");
+    if (Check_delay_ms(330)) {
 #if 1
         LIS3DSH_GetAxis();
-        LIS3DSH_WaitFlag();
+        SPI1_WaitFlag();
         LIS3DSH_GetData(data);
 #else
         LIS3DSH_Read(OUT_DATA, data, 6);
@@ -170,34 +172,35 @@ void LIS3DSH_View() {
       PCF8812_FValue("Z ", res.z, " G", 3);
       uint16_t threshold = 500;
       if (temp.x > threshold) {
-        PCF8812_Set_Symb(blank, 5, 9);
-        PCF8812_Set_Symb(arrow_left, 5, 7);
+        PCF8812_Putchar(blank, 5, 9);
+        PCF8812_Putchar(arrow_left, 5, 7);
       }
       else if (temp.x < -threshold) {
-        PCF8812_Set_Symb(arrow_right, 5, 9);
-        PCF8812_Set_Symb(blank, 5, 7);
+        PCF8812_Putchar(arrow_right, 5, 9);
+        PCF8812_Putchar(blank, 5, 7);
       }
       else {
-        PCF8812_Set_Symb(blank, 5, 9);
-        PCF8812_Set_Symb(blank, 5, 7);
+        PCF8812_Putchar(blank, 5, 9);
+        PCF8812_Putchar(blank, 5, 7);
       }
       if (temp.y > threshold) {
-        PCF8812_Set_Symb(arrow_down, 6, 8);
-        PCF8812_Set_Symb(blank, 4, 8);
+        PCF8812_Putchar(arrow_down, 6, 8);
+        PCF8812_Putchar(blank, 4, 8);
       }
       else if (temp.y < -threshold) {
-        PCF8812_Set_Symb(blank, 6, 8);
-        PCF8812_Set_Symb(arrow_up, 4, 8);
+        PCF8812_Putchar(blank, 6, 8);
+        PCF8812_Putchar(arrow_up, 4, 8);
       }
       else {
-        PCF8812_Set_Symb(blank, 6, 8);
-        PCF8812_Set_Symb(blank, 4, 8);
+        PCF8812_Putchar(blank, 6, 8);
+        PCF8812_Putchar(blank, 4, 8);
       }
       if(Button_Get(user_button))
         return;
       PCF8812_DELAY;
     }
 }
+
 /**
   * @brief  This function handles data received via DMA past LIS3DSH interrupt
   * @param  None

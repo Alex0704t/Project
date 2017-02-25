@@ -332,8 +332,8 @@ void Get_Audiochip_ID(void)
   }
   else
     strcpy(str1, "Audiochip unknown");
-  PCF8812_Putline(str1, 3);
-  PCF8812_Putline(str2, 4);
+  PCF8812_String(str1, 3);
+  PCF8812_String(str2, 4);
   delay_ms(2000);
 }
 

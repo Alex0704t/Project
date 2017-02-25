@@ -143,7 +143,10 @@ extern void Led_Systick_Blink(void);
 
 void SysTick_Handler(void) {
     Inc_Tick();
+//    PCF8812_Handler();
+#ifdef PWM_LED_CONTROL
     Led_Systick_Blink();
+#endif
     Disk_Timerproc();
   }
 
@@ -222,13 +225,20 @@ void SPI1_IRQHandler(void) {
   if (SPI1->SR & SPI_SR_TXE) {
 
   }
+  if (SPI1->SR & SPI_SR_RXNE) {
+
+  }
+  if (SPI1->SR & SPI_SR_OVR) {
+
+  }
 }
 
 void DMA2_Stream3_IRQHandler(void) {
   if (DMA2->LISR & DMA_LISR_TCIF3) {//check transfer complete
     DMA2->LIFCR |= DMA_LIFCR_CTCIF3;//clear interrupt flag
+    while (!(SPI1->SR & SPI_SR_TXE));
+    while ((SPI1->SR & SPI_SR_BSY));//wait for transmit complete
     DMA2_Stream3->CR &= ~DMA_SxCR_EN;//stream disable
-    DMA2_Stream3->CR &= ~DMA_SxCR_TCIE;//transfer complete interrupt disable
   }
 }
 
@@ -238,12 +248,11 @@ void DMA2_Stream0_IRQHandler(void) {
   if (DMA2->LISR & DMA_LISR_TCIF0) {//check transfer complete
     DMA2->LIFCR |= DMA_LIFCR_CTCIF0;//clear interrupt flag
     DMA2_Stream0->CR &= ~DMA_SxCR_EN;//stream disable
-    DMA2_Stream0->CR &= ~DMA_SxCR_TCIE;//transfer complete interrupt disable
     uint8_t temp = SPI1_DMA_mode_flag;
+    SPI1_SetFlag();
     SPI1_DMA_mode_flag = SPI1_DMA_disable;
     if ((temp & SPI1_DMA_LIS3DSH) == SPI1_DMA_LIS3DSH) {
       LIS3DSH_CS_OFF();
-      LIS3DSH_SetFlag();
       if ((temp & SPI1_DMA_LIS3DSH_INT2) == SPI1_DMA_LIS3DSH_INT2)
         LIS3DSH_IntHandler();
     }
@@ -256,14 +265,11 @@ void SPI2_IRQHandler(void) {
   }
 }
 
-void DMA1_Stream4_IRQHandler(void)
-{
-  if (DMA1->HISR & DMA_HISR_TCIF4)//check transfer complete
-  {
+void DMA1_Stream4_IRQHandler(void) {
+  if (DMA1->HISR & DMA_HISR_TCIF4) {//check transfer complete
     DMA1->HIFCR |= DMA_HIFCR_CTCIF4;//clear interrupt flag
-    //DMA1_Stream4->CR &= ~DMA_SxCR_TCIE;//transfer complete interrupt disable
     while (!(SPI2->SR & SPI_SR_TXE));
-    while ((SPI2->SR & SPI_SR_BSY));
+    while ((SPI2->SR & SPI_SR_BSY));//wait for transmit complete
     DMA1_Stream4->CR &= ~DMA_SxCR_EN;//stream disable
     PCF8812_buff_state = PCF8812_FLUSHED;
   }
@@ -286,7 +292,9 @@ void TIM5_IRQHandler() {
     TIM5->SR &= ~TIM_SR_UIF;//clear update interrupt flag
     Button_Handler();
     PCF8812_Handler();
+#ifdef USE_DISP_LIGHT_OFF
     PCF8812_Count();
+#endif
     }
 }
 

@@ -20,6 +20,7 @@
 int main(void)
 {
   MCU_Init();
+
 #if 1
   FIL myFile;
 
@@ -48,16 +49,25 @@ int main(void)
         LED_ON(red);
     }
   }
-
+  double pi = 3.14;
+  PCF8812_Print("Done.Bye!\nI try print\nmultistring text right now!\n");
+  PCF8812_Printf("test %d %.2f\n", 666, pi);
+  for (uint8_t i = 0; i < 10; i++)
+    PCF8812_Printf("iter %d\n", i);
 
   while(1)
   {
 
 
 #else
+  SPI1_DMA_Init();
+  LIS3DSH_En(SCALE_2G, ODR_25Hz);
+//  LIS3DSH_MovDetEn(SCALE_2G, ODR_25Hz);
   while(1)
   {
-      Main_menu();
+//
+      LIS3DSH_View();
+//      Main_menu();
 #endif
   }
 }

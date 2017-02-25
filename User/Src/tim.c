@@ -118,7 +118,7 @@ void Tim5_Init(uint8_t frequency)
   TIM5->CR1 &= ~TIM_CR1_DIR;//count direction up
   TIM5->CR1 |= TIM_CR1_ARPE;//ARR preload enable
 
-  NVIC_SetPriority(TIM5_IRQn, 0);
+  NVIC_SetPriority(TIM5_IRQn, 1);
   NVIC_EnableIRQ(TIM5_IRQn);
 
   TIM5->CR1 |= TIM_CR1_CEN;//TIM5 enabled

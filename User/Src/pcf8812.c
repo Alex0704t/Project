@@ -37,7 +37,7 @@ void PCF8812_Command(uint8_t data) {
 
 void PCF8812_Data(uint8_t data) {
 	PCF8812_DATA();//set D/C for data mode
-	SPI2_DMA_Send(&data, 1);//send data via DMA
+	SPI2_DMA_Tx(&data, 1);//send data via DMA
 }
 
 void PCF8812_Set() {
@@ -76,8 +76,7 @@ void PCF8812_Clear(void) {
 }
 
 void PCF8812_Test(void) {
-  for(uint16_t i = 0; i < PCF8812_BUFSIZ; i += 16)
-    {
+  for(uint16_t i = 0; i < PCF8812_BUFSIZ; i += 16) {
     PCF8812_buff[i +  0] = 0x01;
     PCF8812_buff[i +  1] = 0x01;
     PCF8812_buff[i +  2] = 0x02;
@@ -96,27 +95,25 @@ void PCF8812_Test(void) {
     PCF8812_buff[i + 15] = 0x80;
     }
   delay_ms(1000);
-  PCF8812_Putline_Center("Hello, World!", 0);
-  PCF8812_Putline_Center("Привет, Мир!", 1);
-  PCF8812_Putline_Center("Привіт, Світ!", 2);
-  PCF8812_Putline_Center("ARM Cortex M4", 3);
-  PCF8812_Putline_Center("STM32F4Discovery", 4);
-  PCF8812_Putline_Center("Aleksey Totkal", 5);
-  PCF8812_Putline_Center("Алексей Тоткал", 6);
-  PCF8812_Putline_Center("Олексій Тоткал", 7);
+  PCF8812_String_Center("Hello, World!", 0);
+  PCF8812_String_Center("Привет, Мир!", 1);
+  PCF8812_String_Center("Привіт, Світ!", 2);
+  PCF8812_String_Center("ARM Cortex M4", 3);
+  PCF8812_String_Center("STM32F4Discovery", 4);
+  PCF8812_String_Center("Aleksey Totkal", 5);
+  PCF8812_String_Center("Алексей Тоткал", 6);
+  PCF8812_String_Center("Олексій Тоткал", 7);
   delay_ms(2000);
   PCF8812_Clear();
 }
 
 void PCF8812_Toggle(void) {
 	static uint8_t mode = DISP_NORMAL;
-	if(mode == DISP_INVERSE)
-	{
+	if (mode == DISP_INVERSE) {
 		PCF8812_Command(DISP_INVERSE);
 		mode = DISP_NORMAL;
 	}
-	else
-	{
+	else {
 		PCF8812_Command(DISP_NORMAL);
 		mode = DISP_INVERSE;
 	}
@@ -150,7 +147,7 @@ uint8_t PCF8812_Decode(uint8_t c) {
 	else
 	{
 		//if(192 <= c && c <= 255)
-		if(/*(wchar_t)*/'Ґ' <= c && c <= /*(wchar_t)*/'я')//cyrillic ASCII character
+		if('Ґ' <= c && c <= 'я')//cyrillic ASCII character
 		{
 			c -= 70;//97;
 		}
@@ -178,13 +175,13 @@ void PCF8812_Set_Char(uint8_t c, uint8_t line, uint8_t col) {
   PCF8812_NEED_FLUSH();
 }
 
-void PCF8812_Set_Symb(symb_ar symb, uint8_t line, uint8_t col) {
+inline void PCF8812_Putchar(const char c[5], uint8_t line, uint8_t col) {
   //set some graphic symbol
-  PCF8812_buff[PCF8812_DECODE_C(line, col) + 0] = symb[0];
-  PCF8812_buff[PCF8812_DECODE_C(line, col) + 1] = symb[1];
-  PCF8812_buff[PCF8812_DECODE_C(line, col) + 2] = symb[2];
-  PCF8812_buff[PCF8812_DECODE_C(line, col) + 3] = symb[3];
-  PCF8812_buff[PCF8812_DECODE_C(line, col) + 4] = symb[4];
+  PCF8812_buff[PCF8812_DECODE_C(line, col) + 0] = c[0];
+  PCF8812_buff[PCF8812_DECODE_C(line, col) + 1] = c[1];
+  PCF8812_buff[PCF8812_DECODE_C(line, col) + 2] = c[2];
+  PCF8812_buff[PCF8812_DECODE_C(line, col) + 3] = c[3];
+  PCF8812_buff[PCF8812_DECODE_C(line, col) + 4] = c[4];
   PCF8812_buff[PCF8812_DECODE_C(line, col) + 5] = 0x00;
   PCF8812_NEED_FLUSH();
 }
@@ -201,24 +198,24 @@ void PCF8812_Inv_Char(uint8_t line, uint8_t col) {
 
 //Error message in line 0
 void PCF8812_Error(char* s) {
-  char str[PCF8812_STR_SIZ] = "ERR:";
+  char str[PCF8812_STR_SIZ] = "!";
   strcat(str, s);
-  PCF8812_Putline(str, 0);
+  PCF8812_String(str, 0);
 }
 
 //Message in line 0
 void PCF8812_Message(char* s) {
-  char str[PCF8812_STR_SIZ] = "MSG:";
+  char str[PCF8812_STR_SIZ] = ":";
   strcat(str, s);
-  PCF8812_Putline(str, 0);
+  PCF8812_String(str, 0);
 }
 
 //View menu name in line 0
 void PCF8812_Title(char* s) {
-  PCF8812_Putline_Center(s, 0);
+  PCF8812_String_Center(s, 0);
 }
 
-void PCF8812_Putline(char* s, uint8_t line) {
+void PCF8812_String(char* s, uint8_t line) {
   char str[PCF8812_STR_SIZ] = "";
   strcpy(str, s);
   strncat(str, EMPTY_STR, (PCF8812_LCD_LINE - strlen(s)));//added spaces for clear end of line
@@ -226,23 +223,23 @@ void PCF8812_Putline(char* s, uint8_t line) {
     PCF8812_Set_Char(str[i], line, i);
 }
 
-void PCF8812_Putline_Center(char *s, uint8_t line) {
+void PCF8812_String_Center(char *s, uint8_t line) {
   uint8_t sp_num = PCF8812_LCD_LINE - strlen(s);//number of spaces
   char str[PCF8812_STR_SIZ] = "";
   //insert string in center of line
   strncpy(str, EMPTY_STR, sp_num / 2);
   strcat(str, s);
   strncat(str, EMPTY_STR, sp_num / 2 + sp_num % 2);
-  PCF8812_Putline(str, line);
+  PCF8812_String(str, line);
 }
 
-void PCF8812_Putline_Right(char* s, uint8_t line) {
+void PCF8812_String_Right(char* s, uint8_t line) {
   uint8_t sp_num = PCF8812_LCD_LINE - strlen(s);//number of spaces
   char str[PCF8812_STR_SIZ] = "";
   //insert string in end of line
   strncpy(str, EMPTY_STR, sp_num);
   strcat(str, s);
-  PCF8812_Putline(str, line);
+  PCF8812_String(str, line);
 }
 
 
@@ -255,7 +252,7 @@ void PCF8812_SValue(char* name, int32_t value, char* unit, uint8_t line) {
   snprintf(pval, n_dig, "% *.li", (n_dig - 1), value);
   snprintf(str, PCF8812_STR_SIZ, "%s%s%s", name, pval, unit);
   free(pval);
-  PCF8812_Putline_Center(str, line);
+  PCF8812_String_Center(str, line);
 }
 
 void PCF8812_UValue(char* name, uint32_t value, char* unit, uint8_t line) {
@@ -265,7 +262,7 @@ void PCF8812_UValue(char* name, uint32_t value, char* unit, uint8_t line) {
   snprintf(pval, n_dig, "% *.lu", (n_dig - 1), value);
   snprintf(str, PCF8812_STR_SIZ, "%s%s%s", name, pval, unit);
   free(pval);
-  PCF8812_Putline_Center(str, line);
+  PCF8812_String_Center(str, line);
 }
 
 void PCF8812_HValue(char* name, uint32_t value, uint8_t line) {
@@ -275,7 +272,7 @@ void PCF8812_HValue(char* name, uint32_t value, uint8_t line) {
   snprintf(pval, n_dig, "%#*.8lx", (n_dig - 1), value);
   snprintf(str, PCF8812_STR_SIZ, "%s%s", name, pval);
   free(pval);
-  PCF8812_Putline(str, line);
+  PCF8812_String(str, line);
 }
 
 void PCF8812_FValue(char* name, double value, char* unit, uint8_t line) {
@@ -285,7 +282,7 @@ void PCF8812_FValue(char* name, double value, char* unit, uint8_t line) {
   snprintf(pval, n_dig, "% *.4g", (n_dig - 1), value);
   snprintf(str, PCF8812_STR_SIZ, "%s%s%s", name, pval, unit);
   free(pval);
-  PCF8812_Putline(str, line);
+  PCF8812_String(str, line);
 }
 
 #else
@@ -309,7 +306,7 @@ void PCF8812_FValue(char* name, double value, char* unit, uint8_t line) {
   strcat(str, pval);
   strcat(str, unit);
   free(pval);
-  PCF8812_Putline(str, line);
+  PCF8812_String(str, line);
 }
 
 void PCF8812_SValue(char* name, int32_t value, char* unit, uint8_t line) {
@@ -322,7 +319,7 @@ void PCF8812_SValue(char* name, int32_t value, char* unit, uint8_t line) {
   strcat(str, pval);
   strcat(str, unit);
   free(pval);
-  PCF8812_Putline_Center(str, line);
+  PCF8812_String_Center(str, line);
 }
 
 void PCF8812_UValue(char* name, uint32_t value, char* unit, uint8_t line) {
@@ -335,7 +332,7 @@ void PCF8812_UValue(char* name, uint32_t value, char* unit, uint8_t line) {
   strcat(str, pval);
   strcat(str, unit);
   free(pval);
-  PCF8812_Putline_Center(str, line);
+  PCF8812_String_Center(str, line);
 }
 
 void PCF8812_HValue(char* name, uint32_t value, uint8_t line) {
@@ -348,7 +345,7 @@ void PCF8812_HValue(char* name, uint32_t value, uint8_t line) {
   strcat(str, "0x");
   strcat(str, pval);
   free(pval);
-  PCF8812_Putline_Center(str, line);
+  PCF8812_String_Center(str, line);
 }
 
 #endif
@@ -358,11 +355,11 @@ void PCF8812_Percent(char* name, int8_t value, uint8_t line) {
   char str[PCF8812_STR_SIZ];
   if(value < 0)
     {
-      PCF8812_Putline("Negative % value", line);
+      PCF8812_String("Negative % value", line);
       return;
     }
   snprintf(str, PCF8812_STR_SIZ, "%.13s %d%%", name, value);
-  PCF8812_Putline_Center(str, line);
+  PCF8812_String_Center(str, line);
   column = value;
   PCF8812_Set_byte((line + 1), i++, 0x7F);
   while(i < 100)
@@ -410,7 +407,8 @@ void PCF8812_Handler(void) {
   if(PCF8812_buff_state == PCF8812_CHANGED/* && PCF8812_ON_flag == SET*/) {
     PCF8812_Home();//set coordinates to 0, 0
     PCF8812_DATA();//data mode
-    SPI2_DMA_Send(PCF8812_buff, PCF8812_BUFSIZ);//flush LCD buffer
+    SPI2_DMA_Tx(PCF8812_buff, PCF8812_BUFSIZ);//flush LCD buffer
+//    SPI2_Send_buff();
     PCF8812_buff_state = PCF8812_BUSY;
     }
 }
@@ -481,11 +479,11 @@ void PCF8812_Triangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t x3
 void PCF8812_Time(uint8_t view, uint8_t line) {
   char str[PCF8812_STR_SIZ] = "";
   Get_Time_String(NULL, str, view);
-  PCF8812_Putline_Center(str, line);
+  PCF8812_String_Center(str, line);
 }
 
 void PCF8812_Option(char* option, uint8_t line) {
-  PCF8812_Putline(option, line);
+  PCF8812_String(option, line);
 }
 
 void PCF8812_Cursor(uint8_t line) {
@@ -566,10 +564,10 @@ uint32_t PCF8812_Input_Int(char* name, uint32_t min, uint32_t max) {
     //view value
     sprintf(str, "%.*s%.*u%.*s", (PCF8812_LCD_LINE - n_dig)/2, EMPTY_STR, n_dig, result, \
                                  (PCF8812_LCD_LINE - n_dig)/2 + (PCF8812_LCD_LINE - n_dig)%2, EMPTY_STR);
-    PCF8812_Putline(str, 3);
+    PCF8812_String(str, 3);
     //view selected digit
-    PCF8812_Set_Symb(corner_up, 2, (PCF8812_LCD_LINE - n_dig)/2 + n_dig - col);
-    PCF8812_Set_Symb(corner_down, 4, (PCF8812_LCD_LINE - n_dig)/2 + n_dig - col);
+    PCF8812_Putchar(corner_up, 2, (PCF8812_LCD_LINE - n_dig)/2 + n_dig - col);
+    PCF8812_Putchar(corner_down, 4, (PCF8812_LCD_LINE - n_dig)/2 + n_dig - col);
     if (Button_Get(button_1)) {//move the input field to the left
       //increase to the maximum and return to a minimum
       mul = (mul < max_mul) ? (mul * 10) : 1;//
@@ -609,7 +607,7 @@ uint32_t PCF8812_Set_Param(Par_list* list) {
       INCR_ENC(1);
     if (Button_Get(user_button))//return result
       return list->item[i].code;
-    PCF8812_Putline_Center(list->item[i].name, 4);
+    PCF8812_String_Center(list->item[i].name, 4);
     PCF8812_DELAY;
   }
   return 0;
@@ -629,13 +627,13 @@ void PCF8812_Input_Time() {
   Button_Set_Name(button_2, "> ");
   for(;;) {
     PCF8812_Clear();
-    PCF8812_Putline_Center("SET DATE & TIME", 0);
+    PCF8812_String_Center("SET DATE & TIME", 0);
     Get_Time_String(&temp, str, view_all);
-    PCF8812_Putline_Center(str, 3);
-    PCF8812_Putline("dd.mm.yy HH:MM:SS", 5);//view data & time format
+    PCF8812_String_Center(str, 3);
+    PCF8812_String("dd.mm.yy HH:MM:SS", 5);//view data & time format
     //view selected digit
-    PCF8812_Set_Symb(corner_up, 2, col);
-    PCF8812_Set_Symb(corner_down, 4, col);
+    PCF8812_Putchar(corner_up, 2, col);
+    PCF8812_Putchar(corner_down, 4, col);
     if (Button_Get(button_1)) {
       col--;//move the input field to the left
       if(col % 3 == 2)//jump across separator
@@ -726,3 +724,38 @@ void PCF8812_Count() {
       PCF8812_Off();
 }
 
+void PCF8812_Print(char *s){
+  static uint8_t line = 1, col, new_line_flag;
+  char c;
+  while (*s) {
+      if (*s == '\n') {
+        col = 0;
+        line++;
+        new_line_flag = 1;
+        s++;
+      }
+      else {
+        c = PCF8812_Decode(*s++);
+        if (new_line_flag) {
+          PCF8812_Clr_Line(line);
+          new_line_flag = 0;
+        }
+        PCF8812_Putchar(lcd_font[c], line, col++);
+      }
+
+//      col++;
+
+      if (col == PCF8812_LCD_LINE) {
+        col = 0;
+        line++;
+        new_line_flag = 1;
+      }
+      if (line == 7) {
+         line = 1;
+         new_line_flag = 1;
+      }
+  }
+//  PCF8812_Clr_Line(line);
+//  PCF8812_Putchar(lcd_font[PCF8812_Decode('|')], line, col);
+  PCF8812_Inv_Char(line, col);
+}

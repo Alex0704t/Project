@@ -102,7 +102,7 @@ void Read_Voltage(void) {
   Button_Set_Name(user_button, "EXIT");
   while (1) {
       PCF8812_Clear();
-      PCF8812_Putline("VOLTAGE  (PA1-IN)", 0);
+      PCF8812_String("VOLTAGE  (PA1-IN)", 0);
       if(Check_delay_ms(500)) {
         value = Read_ADC1();
         value = value * U_3V / 4095;

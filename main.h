@@ -33,9 +33,10 @@
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 #define ABS(x)         (x < 0) ? (-x) : x
-#define MAX(a,b)       (a < b) ? (b) : a
+#define MAX(a,b)       (a < b) ? (b)  : a
 #define USE_FULL_ASSERT
-#define PWM_LED_CONTROL
+//#define USE_DISP_LIGHT_OFF
+//#define PWM_LED_CONTROL
 
 //#define USE_MP3
 

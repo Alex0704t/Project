@@ -9,7 +9,7 @@
 
 void MCU_Init() {
   Clock_Init();
-//  RTC_Init();
+  RTC_Init();
 
   Led_Init();
   Enc_Tim3_Init();
@@ -17,7 +17,7 @@ void MCU_Init() {
   PCF8812_Init();
   PCF8812_Test();
   USB_HID_Init();
-  //SCB->CPACR |= 0x00F00000;//enable FPU
+//  SCB->CPACR |= 0x00F00000;//enable FPU
   //Audio_Init();
   //AnalogWave_Init(1000, 30);
 }
