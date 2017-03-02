@@ -49,11 +49,6 @@ int main(void)
         LED_ON(red);
     }
   }
-  double pi = 3.14;
-  PCF8812_Print("Done.Bye!\nI try print\nmultistring text right now!\n");
-  PCF8812_Printf("test %d %.2f\n", 666, pi);
-  for (uint8_t i = 0; i < 10; i++)
-    PCF8812_Printf("iter %d\n", i);
 
   while(1)
   {

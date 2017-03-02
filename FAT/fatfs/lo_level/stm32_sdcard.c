@@ -388,14 +388,7 @@ uint8_t SD_Detect(void) {
 // data : Data to send
 //--------------------------------------------------------------
 static BYTE xchg_spi(BYTE data) {
-#if 0
   return SPI1_TxRxByte(data);
-#else
-  uint8_t temp = 0;
-//  SPI1_TxRx(&data, &temp, 1);
-  SPI1_DMA_TxRx(&data, &temp, 1);
-  return temp;
-#endif
 }
 //--------------------------------------------------------------
 // Receive multiple byte
@@ -403,21 +396,10 @@ static BYTE xchg_spi(BYTE data) {
 // btr : Number of bytes to receive (even number)
 //--------------------------------------------------------------
 static void rcvr_spi_multi(BYTE *buff, UINT btr) {
-#if 0
-  uint8_t *temp = (uint8_t *)malloc(btr*sizeof(UINT));
-//  for(uint8_t i = 0; i < btr; i++)
-//    *temp++ = 0xFF;
-  SPI1_DMA_TxRx(temp, buff, btr);
-//  SPI1_TxRx(temp, buff, btr);
-#else
-  BYTE b;
-  do {
-    b = SPI1_TxRxByte(0xFF);
-    *buff = b;
-    buff++;
-    btr--;
-  } while (btr != 0);
-#endif
+  PCF8812_Printf("rcvr %d", btr);
+
+//  SPI1_DMA_TxRx(NULL, buff, btr);
+  SPI1_Rx(buff, btr);
 }
 
 
@@ -428,17 +410,9 @@ static void rcvr_spi_multi(BYTE *buff, UINT btr) {
 // btx : Number of bytes to send (even number)
 //--------------------------------------------------------------
 static void xmit_spi_multi(const BYTE *buff, UINT btx) {
-#if 0
-  SPI1_TxRx(buff, NULL, btx);
-#else
-  BYTE b;
-  do {
-    b = *buff;
-    SPI1_TxRxByte(b);
-    buff++;
-    btx--;
-  } while (btx != 0);
-#endif
+//  SPI1_DMA_TxRx((const BYTE *)buff, NULL, btx);
+  SPI1_Tx((const BYTE *)buff, btx);
+  PCF8812_Printf("xmit %d|", btx);
 }
 #endif
 

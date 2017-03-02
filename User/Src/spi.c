@@ -7,6 +7,8 @@
 
 #include "spi.h"
 
+uint8_t *pTx_SPI1_data, *pRx_SPI1_data;
+
 void SPI1_Init(void) {
 	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
@@ -17,11 +19,11 @@ void SPI1_Init(void) {
 	 */
 	GPIOA->MODER |= 0x0000A800;//alternate function mode
   GPIOA->OSPEEDR |= 0x0000A800;//high speed
-	GPIOA->PUPDR &= ~0x0000FC00;//no pull-up & pull-down
-//	GPIOA->PUPDR |= 0x0000A800;//pull-down
+//	GPIOA->PUPDR &= ~0x0000FC00;//no pull-up & pull-down
+	GPIOA->PUPDR |= 0x0000A800;//pull-down
 
-  GPIOA->PUPDR &= ~GPIO_PUPDR_PUPDR6;//clear PA6 PUPDR
-	GPIOA->PUPDR |= GPIO_PUPDR_PUPDR6_0;//PA6 pull-up(MISO for SD card)
+//  GPIOA->PUPDR &= ~GPIO_PUPDR_PUPDR6;//clear PA6 PUPDR
+//	GPIOA->PUPDR |= GPIO_PUPDR_PUPDR6_0;//PA6 pull-up(MISO for SD card)
 	GPIOA->AFR[0] |= 0x55500000;//SPI1 alternate function AF5
 
 	SPI1->CR1 = 0;//clear CR1 register
@@ -36,9 +38,9 @@ void SPI1_Init(void) {
  * 111 Fpclk/256
  */
 /** select baudrate ***********************************************************/
-//	SPI1->CR1 |= SPI_CR1_BR_2;
+	SPI1->CR1 |= SPI_CR1_BR_2;
 //	SPI1->CR1 |= SPI_CR1_BR_1;
-//	SPI1->CR1 |= SPI_CR1_BR_0;
+	SPI1->CR1 |= SPI_CR1_BR_0;
 /** select clock phase & polarity *********************************************/
 //	SPI1->CR1 |= SPI_CR1_CPOL;//CPOL = 1
 //	SPI1->CR1 |= SPI_CR1_CPHA;//CPHA = 1
@@ -56,8 +58,18 @@ void SPI1_Init(void) {
 	SPI1->CR1 |= SPI_CR1_SSM;//software slave management enable
 /** enable external slave select **********************************************/
 	SPI1->CR1 |= SPI_CR1_SSI;//external slave select
+/** Tx buffer empty interrupt enable ******************************************/
+//	SPI1->CR2 |= SPI_CR2_TXEIE;
+/** Rx buffer not empty interrupt enable **************************************/
+//  SPI1->CR2 |= SPI_CR2_RXNEIE;
+
+//  NVIC_SetPriority(SPI1_IRQn, 4);
+//  NVIC_EnableIRQ(SPI1_IRQn);//IRQ handler
 
 	SPI1->CR1 |= SPI_CR1_SPE;//SPI enable
+
+
+
 }
 
 void SPI1_DeInit(void) {
@@ -67,43 +79,68 @@ void SPI1_DeInit(void) {
 }
 
 uint8_t SPI1_TxRxByte(uint8_t data) {
+  uint8_t temp;
   while (!(SPI1->SR & SPI_SR_TXE));
   SPI1->DR = data;
   while (!(SPI1->SR & SPI_SR_RXNE));
-  return SPI1->DR;
+  temp = SPI1->DR;
+  while (!(SPI1->SR & SPI_SR_TXE));
+  while ((SPI1->SR & SPI_SR_BSY));
+  return temp;
 }
 
-void SPI1_TxRx(uint8_t *tx_data, uint8_t *rx_data, uint8_t size) {
-#if 0
+void SPI1_Rx(uint8_t *data, uint16_t size) {
+  while (!(SPI1->SR & SPI_SR_TXE));
+  SPI1->DR = 0xFF;
   while (size--) {
     while (!(SPI1->SR & SPI_SR_TXE));
-    if (tx_data != NULL)
-      SPI1->DR = *tx_data;
-    else
-      SPI1->DR = 0xFF;
+    SPI1->DR = 0xFF;
     while (!(SPI1->SR & SPI_SR_RXNE));
-    *rx_data = SPI1->DR;
-//    while ((SPI1->SR & SPI_SR_BSY));
-    tx_data++;
-    rx_data++;
-//    LED_TOGGLE(orange);
+    *data++ = SPI1->DR;
   }
+}
+
+void SPI1_Tx(uint8_t *data, uint16_t size) {
+  while (size--) {
+    while (!(SPI1->SR & SPI_SR_TXE));
+    SPI1->DR = *data++;
+  }
+  while (!(SPI1->SR & SPI_SR_TXE));
+  while ((SPI1->SR & SPI_SR_BSY));
+}
+
+void SPI1_TxRx(uint8_t *tx_data, uint8_t *rx_data, uint16_t size) {
+#if 1
+  while (!(SPI1->SR & SPI_SR_TXE));
+  SPI1->DR = *tx_data;
+  while (--size) {
+    while (!(SPI1->SR & SPI_SR_TXE));
+    SPI1->DR = *(++tx_data);
+    while (!(SPI1->SR & SPI_SR_RXNE));
+    *rx_data++ = SPI1->DR;
+  }
+  while (!(SPI1->SR & SPI_SR_RXNE));
+  *rx_data = SPI1->DR;
+  while (!(SPI1->SR & SPI_SR_TXE));
+  while ((SPI1->SR & SPI_SR_BSY));
 #else
 //    if(!tx_data)
 //      for(uint8_t i = 0; i < size; i++)
-//        rx_data[i] = SPI1_ByteExchange(0xFF);
+//        rx_data[i] = SPI1_TxRxByte(0xFF);
 //    else if(!rx_data)
 //      for(uint8_t i = 0; i < size; i++)
-//        SPI1_ByteExchange(tx_data[i]);
+//        SPI1_TxRxByte(tx_data[i]);
 //    else
-      for(uint8_t i = 0; i < size; i++)
-        rx_data[i] = SPI1_TxRxByte(tx_data[i]);
-//  while(size--) {
-//     *rx_data++ = SPI1_ByteExchange(*tx_data++);
+//      for(uint8_t i = 0; i < size; i++) {
+//        rx_data[i] = SPI1_TxRxByte(tx_data[i]);
+//      }
+
+  while(size--) {
+     *rx_data++ = SPI1_TxRxByte(*tx_data++);
 //     rx_data++;
 //     tx_data++;
 //     size--;
-//  }
+  }
 #endif
 }
 
@@ -254,17 +291,17 @@ void LIS3DSH_Write(uint8_t addr, uint8_t *data, uint8_t size) {
 }
 
 void LIS3DSH_Read(uint8_t addr, uint8_t *data, uint8_t size) {
-#if 0
+#if 1
   uint8_t temp = 0;
   addr |= 0x80;
   LIS3DSH_CS_ON();
   while (!(SPI1->SR & SPI_SR_TXE));
   SPI1->DR = addr;
-  while (!(SPI1->SR & SPI_SR_RXNE));
+//  while (!(SPI1->SR & SPI_SR_RXNE));
   temp = SPI1->DR;
   while (size--) {
     while (!(SPI1->SR & SPI_SR_TXE));
-    SPI1->DR = DUMMY;
+    SPI1->DR = 0xFF;
     while (!(SPI1->SR & SPI_SR_RXNE));
     *data++ = SPI1->DR;
   }
@@ -323,7 +360,7 @@ void SPI1_DMA_Init(void) {
 	/** SPI1 TX DMA2 Stream_3 channel_3*/
 	DMA2_Stream3->CR = 0;
 	DMA2_Stream3->FCR = 0;
-	DMA2_Stream3->CR |= DMA_SxCR_CHSEL_0|DMA_SxCR_CHSEL_1;//channel3 select
+	DMA2_Stream3->CR |= DMA_SxCR_CHSEL_0|DMA_SxCR_CHSEL_1;//channel 3 select
 	DMA2_Stream3->CR |= DMA_SxCR_PL_0|DMA_SxCR_PL_1;//very high priority
 	DMA2_Stream3->CR &= ~(DMA_SxCR_MSIZE|DMA_SxCR_PSIZE);//memory & peripheral data size 1 byte
 	DMA2_Stream3->CR |= DMA_SxCR_MINC;//memory increment mode
@@ -336,7 +373,7 @@ void SPI1_DMA_Init(void) {
 	/** SPI1 RX DMA2 Stream_0 channel_3*/
 	DMA2_Stream0->CR = 0;
 	DMA2_Stream0->FCR = 0;
-	DMA2_Stream0->CR |= DMA_SxCR_CHSEL_0|DMA_SxCR_CHSEL_1;//channel3 select
+	DMA2_Stream0->CR |= DMA_SxCR_CHSEL_0|DMA_SxCR_CHSEL_1;//channel 3 select
 	DMA2_Stream0->CR |= DMA_SxCR_PL_0|DMA_SxCR_PL_1;//very high priority
 	DMA2_Stream0->CR &= ~(DMA_SxCR_MSIZE|DMA_SxCR_PSIZE);//memory & peripheral data size 1 byte
 	DMA2_Stream0->CR |= DMA_SxCR_MINC;//memory increment mode
@@ -364,7 +401,7 @@ void SPI1_DMA_DeInit(void) {
 __IO uint8_t SPI1_data_ready;
 __IO uint8_t lis3dsh_ax_data[LIS3DSH_BUFSIZE];
 uint8_t lis3dsh_tx_dummy[LIS3DSH_BUFSIZE] = {OUT_DATA|0x80, 0, 0, 0, 0, 0, 0};
-uint8_t *pTx_SPI1_data, *pRx_SPI1_data;
+
 
 void SPI1_DMA_TxRx(uint8_t *tx_data, uint8_t *rx_data, uint16_t size) {
 //  uint8_t tx_buf[size], rx_buf[size];
@@ -404,20 +441,21 @@ void LIS3DSH_GetAxis() {
 	DMA2_Stream3->CR |= DMA_SxCR_EN;//stream enable
 }
 
-inline void LIS3DSH_GetData(uint8_t *data) {
+void LIS3DSH_GetData(uint8_t *data) {
   for (uint8_t i = 1; i < LIS3DSH_BUFSIZE; i++)
     data[i - 1] = lis3dsh_ax_data[i];
+//  data = lis3dsh_ax_data + 1;
 }
 
-inline void SPI1_SetFlag() {
+void SPI1_SetFlag() {
   SPI1_data_ready = 1;
 }
 
-inline void SPI1_ResetFlag() {
+void SPI1_ResetFlag() {
   SPI1_data_ready = 0;
 }
 
-inline void SPI1_WaitFlag() {
+void SPI1_WaitFlag() {
   while (!SPI1_data_ready);
 }
 

@@ -155,7 +155,7 @@ void LIS3DSH_View() {
     PCF8812_Clear();
     PCF8812_Title("LIS3DSH");
     if (Check_delay_ms(330)) {
-#if 1
+#if 0
         LIS3DSH_GetAxis();
         SPI1_WaitFlag();
         LIS3DSH_GetData(data);
@@ -167,9 +167,9 @@ void LIS3DSH_View() {
         arr[0] = temp.x, arr[1] = temp.y, arr[2] = temp.z;
         USB_Send_IntArr(arr, 3);
       }
-      PCF8812_FValue("X ", res.x, " G", 1);
-      PCF8812_FValue("Y ", res.y, " G", 2);
-      PCF8812_FValue("Z ", res.z, " G", 3);
+     PCF8812_FValue("X ", res.x, " G", 1);
+     PCF8812_FValue("Y ", res.y, " G", 2);
+     PCF8812_FValue("Z ", res.z, " G", 3);
       uint16_t threshold = 500;
       if (temp.x > threshold) {
         PCF8812_Putchar(blank, 5, 9);

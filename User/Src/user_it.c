@@ -221,6 +221,7 @@ void DMA1_Stream7_IRQHandler(void)
 #endif
 }
 
+
 void SPI1_IRQHandler(void) {
   if (SPI1->SR & SPI_SR_TXE) {
 
@@ -303,7 +304,6 @@ void TIM6_DAC_IRQHandler(void) {
   if (TIM6->SR & TIM_SR_UIF) {
     TIM6->SR &= ~TIM_SR_UIF;//clear update interrupt flag
   TIM6->SR = 0;
-  Disk_Timerproc();
 #ifndef USE_DAC1_DMA
   DAC1_Handler();
 #endif

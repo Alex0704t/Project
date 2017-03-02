@@ -33,7 +33,9 @@ void SPI1_DMA_Init(void);
 void SPI1_DMA_DeInit(void);
 
 uint8_t SPI1_TxRxByte(uint8_t data);
-void SPI1_TxRx(uint8_t *in_data, uint8_t *out_data, uint8_t size);
+void SPI1_Rx(uint8_t *data, uint16_t size);
+void SPI1_Tx(uint8_t *data, uint16_t size);
+void SPI1_TxRx(uint8_t *in_data, uint8_t *out_data, uint16_t size);
 void SPI1_DMA_TxRx(uint8_t *in_data, uint8_t *out_data, uint16_t size);
 
 void LIS3DSH_Write(uint8_t addr, uint8_t *data, uint8_t size);
@@ -45,10 +47,10 @@ void LIS3DSH_ClearReg(uint8_t addr);
 void LIS3DSH_ModReg(uint8_t addr, uint8_t mask, uint8_t value);
 uint8_t LIS3DSH_CheckReg(uint8_t addr, uint8_t value);
 void LIS3DSH_GetAxis(void);
-inline void LIS3DSH_GetData(uint8_t *data);
-inline void SPI1_SetFlag();
-inline void SPI1_ResetFlag();
-inline void SPI1_WaitFlag();
+void LIS3DSH_GetData(uint8_t *data);
+void SPI1_SetFlag();
+void SPI1_ResetFlag();
+void SPI1_WaitFlag();
 
 void SPI2_Init(void);
 void SPI2_DMA_Init(void);
